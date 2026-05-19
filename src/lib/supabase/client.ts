@@ -10,6 +10,7 @@ export const COLLECTIONS = {
   users: "users",
   scholarships: "scholarships",
   courses: "courses",
+  lessons: "lessons",
   news: "news",
   products: "products",
   jobs: "jobs",

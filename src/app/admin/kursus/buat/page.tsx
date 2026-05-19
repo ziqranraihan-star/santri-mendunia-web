@@ -19,7 +19,24 @@ export default function BuatKursusPage() {
     e.preventDefault(); setLoading(true);
     try {
       const price = parseFloat(form.price) || 0;
-      await createDocument(COLLECTIONS.courses, { title: form.title, description: form.description, categoryId: form.type, type: form.type, level: form.level, language: form.language, price, isFree: price === 0, thumbnailUrl: form.thumbnailUrl, mentorId: form.mentorId, totalLessons: 0, totalDuration: 0, enrolledCount: 0, rating: 0, isFeatured: false, isActive: true, tags: form.tags.split(",").map(t => t.trim()).filter(Boolean) });
+      await createDocument(COLLECTIONS.courses, {
+        title: form.title,
+        description: form.description,
+        type: form.type,
+        level: form.level,
+        language: form.language,
+        price,
+        is_free: price === 0,
+        thumbnail_url: form.thumbnailUrl,
+        mentor_id: form.mentorId,
+        total_lessons: 0,
+        total_duration: 0,
+        enrolled_count: 0,
+        rating: 0,
+        is_featured: false,
+        is_active: true,
+        tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
+      });
       router.push("/admin/kursus");
     } catch { alert("Gagal"); } finally { setLoading(false); }
   };
