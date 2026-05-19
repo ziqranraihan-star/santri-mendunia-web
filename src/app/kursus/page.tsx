@@ -6,12 +6,12 @@ import { getDocuments, COLLECTIONS, orderBy, where } from "@/lib/supabase/client
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 
-interface CourseItem { id: string; title: string; description: string; type: string; level: string; price: number; isFree: boolean; rating: number; thumbnailUrl: string; enrolledCount: number; }
+interface CourseItem { id: string; title: string; description: string; type: string; level: string; price: number; is_free: boolean; rating: number; thumbnail_url: string; enrolled_count: number; is_active: boolean; }
 
 export default function KursusPublicPage() {
   const [data, setData] = useState<CourseItem[]>([]); const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("Semua");
-  useEffect(() => { (async () => { const items = await getDocuments<CourseItem>(COLLECTIONS.courses, [orderBy("createdAt", "desc")]); setData(items.filter((x: any) => x.isActive !== false)); setLoading(false); })(); }, []);
+  useEffect(() => { (async () => { const items = await getDocuments<CourseItem>(COLLECTIONS.courses, [orderBy("created_at", "desc")]); setData(items.filter((x: any) => x.is_active !== false)); setLoading(false); })(); }, []);
   const filtered = filter === "Semua" ? data : data.filter((c) => c.type === filter.toLowerCase().replace(" ", "_"));
 
   return (
@@ -26,15 +26,18 @@ export default function KursusPublicPage() {
       : filtered.length === 0 ? <div className="text-center py-20 text-muted-foreground">Belum ada kursus.</div>
       : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{filtered.map((c) => (
           <div key={c.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
-            <div className="h-36 bg-muted">{c.thumbnailUrl && <img src={c.thumbnailUrl} alt={c.title} className="w-full h-full object-cover" />}</div>
+            <div className="h-36 bg-muted">{c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} className="w-full h-full object-cover" />}</div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2"><Badge variant="secondary" className="capitalize text-xs">{c.type?.replace("_", " ")}</Badge><Badge variant="outline" className="capitalize text-xs">{c.level}</Badge></div>
               <h3 className="font-semibold line-clamp-2 mb-2">{c.title}</h3>
               {c.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{c.description}</p>}
               <div className="flex items-center justify-between text-sm">
-                <span className="font-bold text-cat-kursus">{c.isFree ? "GRATIS" : `Rp ${c.price?.toLocaleString()}`}</span>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">{c.rating > 0 && <span>⭐ {c.rating.toFixed(1)}</span>}<span>{c.enrolledCount || 0} peserta</span></div>
+                <span className="font-bold text-cat-kursus">{c.is_free ? "GRATIS" : `Rp ${(c.price || 0).toLocaleString()}`}</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">{(c.rating || 0) > 0 && <span>⭐ {c.rating.toFixed(1)}</span>}<span>{c.enrolled_count || 0} peserta</span></div>
               </div>
+            </div>
+            <div className="p-4 pt-0">
+               <div className="w-full text-center text-xs text-teal mt-2 bg-teal/10 py-2 rounded-md font-medium">Buka Aplikasi Santri Mendunia untuk Belajar</div>
             </div>
           </div>
         ))}</div>}
