@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, GraduationCap, Newspaper, BookOpen,
   Heart, Sparkles, ChevronRight, Globe, Award,
-  FileText, Compass, Briefcase, Plane, ShoppingBag
+  FileText, Compass, Briefcase, Plane, ShoppingBag, Smartphone
 } from "lucide-react";
 
 interface NewsItem { id: string; title: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; }
@@ -60,9 +60,9 @@ export default function HomePage() {
                 Bersama membangun generasi santri yang berwawasan global.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link href="/berita">
-                  <Button size="lg" className="bg-gold hover:bg-gold-dark text-white gap-2">
-                    <Newspaper className="w-4 h-4" /> Baca Berita
+                <Link href="/app">
+                  <Button size="lg" className="bg-white text-teal-deep hover:bg-gray-100 gap-2 font-bold shadow-lg">
+                    <Smartphone className="w-4 h-4" /> Download Aplikasi
                   </Button>
                 </Link>
                 <Link href="/beasiswa">

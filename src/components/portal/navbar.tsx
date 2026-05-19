@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Sparkles, Menu, X, ChevronDown } from "lucide-react";
+import { Sparkles, Menu, X, ChevronDown, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const mainLinks = [
@@ -97,11 +97,19 @@ export default function Navbar() {
 
           {/* CTA + Mobile Toggle */}
           <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden md:block">
-              <Button variant="outline" size="sm" className="border-teal text-teal hover:bg-teal-surface">
-                Admin
-              </Button>
-            </Link>
+            <div className="hidden md:flex items-center gap-2">
+              <Link href="/app">
+                <Button size="sm" className="bg-teal hover:bg-teal-dark gap-1 shadow-sm">
+                  <Smartphone className="w-4 h-4" />
+                  <span className="font-semibold">Download App</span>
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="border-teal text-teal hover:bg-teal-surface">
+                  Admin
+                </Button>
+              </Link>
+            </div>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -126,7 +134,10 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-4 mt-2 border-t border-border/50">
+              <div className="pt-4 mt-2 border-t border-border/50 space-y-2">
+                <Link href="/app" onClick={() => setOpen(false)} className="flex items-center gap-2 px-3 py-2 bg-teal text-white rounded-lg text-sm font-semibold">
+                  <Smartphone className="w-4 h-4" /> Download Aplikasi
+                </Link>
                 <Link href="/login" onClick={() => setOpen(false)} className="block px-3 py-2 text-sm font-medium text-teal">
                   Admin Panel →
                 </Link>
