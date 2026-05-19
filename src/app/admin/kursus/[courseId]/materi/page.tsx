@@ -29,6 +29,14 @@ interface Lesson {
   text_content: string | null;
   duration: number;
   is_free: boolean;
+  quiz_data: { passing_score: number; questions: QuizQuestion[] } | null;
+}
+
+interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct_answer: number;
 }
 
 interface Course {
@@ -46,6 +54,8 @@ const emptyForm = {
   text_content: "",
   duration: 0,
   is_free: false,
+  quiz_passing_score: 70,
+  quiz_questions: [] as QuizQuestion[],
 };
 
 export default function MateriKursusPage() {
@@ -88,6 +98,7 @@ export default function MateriKursusPage() {
 
   function openEdit(lesson: Lesson) {
     setEditId(lesson.id);
+    const qd = lesson.quiz_data;
     setForm({
       title: lesson.title,
       description: lesson.description || "",
@@ -97,6 +108,8 @@ export default function MateriKursusPage() {
       text_content: lesson.text_content || "",
       duration: lesson.duration || 0,
       is_free: lesson.is_free,
+      quiz_passing_score: qd?.passing_score ?? 70,
+      quiz_questions: qd?.questions ?? [],
     });
     setDialogOpen(true);
   }
@@ -105,7 +118,7 @@ export default function MateriKursusPage() {
     if (!form.title.trim()) return alert("Judul wajib diisi!");
     setSaving(true);
     try {
-      const payload = {
+      const payload: any = {
         course_id: courseId,
         title: form.title,
         description: form.description || null,
@@ -115,6 +128,10 @@ export default function MateriKursusPage() {
         text_content: form.text_content || null,
         duration: Number(form.duration) || 0,
         is_free: form.is_free,
+        quiz_data: form.type === 'quiz' ? {
+          passing_score: form.quiz_passing_score,
+          questions: form.quiz_questions,
+        } : null,
       };
 
       if (editId) {
@@ -378,6 +395,95 @@ export default function MateriKursusPage() {
                   onChange={(e) => setForm(p => ({ ...p, text_content: e.target.value }))}
                   placeholder="Tulis materi bacaan di sini..."
                 />
+              </div>
+            )}
+
+            {/* Quiz Editor */}
+            {form.type === "quiz" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold text-amber-700">Editor Soal Kuis</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground">Nilai Lulus (%)</Label>
+                    <Input
+                      type="number" min={1} max={100}
+                      className="w-16 h-7 text-sm"
+                      value={form.quiz_passing_score}
+                      onChange={(e) => setForm(p => ({ ...p, quiz_passing_score: Number(e.target.value) }))}
+                    />
+                  </div>
+                </div>
+
+                {form.quiz_questions.map((q, qi) => (
+                  <div key={q.id} className="border rounded-xl p-4 space-y-3 bg-amber-50/50">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-600">Soal {qi + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setForm(p => ({ ...p, quiz_questions: p.quiz_questions.filter((_, i) => i !== qi) }))}
+                        className="text-red-400 hover:text-red-600 text-xs"
+                      >Hapus Soal</button>
+                    </div>
+                    <Textarea
+                      rows={2}
+                      placeholder="Tulis pertanyaan di sini..."
+                      value={q.question}
+                      onChange={(e) => setForm(p => {
+                        const qs = [...p.quiz_questions];
+                        qs[qi] = { ...qs[qi], question: e.target.value };
+                        return { ...p, quiz_questions: qs };
+                      })}
+                    />
+                    <div className="space-y-2">
+                      {q.options.map((opt, oi) => (
+                        <div key={oi} className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setForm(p => {
+                              const qs = [...p.quiz_questions];
+                              qs[qi] = { ...qs[qi], correct_answer: oi };
+                              return { ...p, quiz_questions: qs };
+                            })}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
+                              q.correct_answer === oi
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'border-gray-300 text-gray-400 hover:border-green-400'
+                            }`}
+                          >
+                            {['A','B','C','D'][oi]}
+                          </button>
+                          <Input
+                            className="h-8 text-sm"
+                            placeholder={`Pilihan ${['A','B','C','D'][oi]}`}
+                            value={opt}
+                            onChange={(e) => setForm(p => {
+                              const qs = [...p.quiz_questions];
+                              const opts = [...qs[qi].options];
+                              opts[oi] = e.target.value;
+                              qs[qi] = { ...qs[qi], options: opts };
+                              return { ...p, quiz_questions: qs };
+                            })}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">💡 Klik huruf (A/B/C/D) untuk menandai jawaban yang benar (warna hijau)</p>
+                  </div>
+                ))}
+
+                <Button
+                  type="button" variant="outline" size="sm"
+                  className="w-full border-dashed border-amber-300 text-amber-600 hover:bg-amber-50"
+                  onClick={() => setForm(p => ({
+                    ...p,
+                    quiz_questions: [
+                      ...p.quiz_questions,
+                      { id: `q${Date.now()}`, question: '', options: ['', '', '', ''], correct_answer: 0 }
+                    ]
+                  }))}
+                >
+                  + Tambah Soal
+                </Button>
               </div>
             )}
 
