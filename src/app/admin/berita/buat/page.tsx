@@ -33,7 +33,6 @@ export default function BuatBeritaPage() {
     imageUrl: "",
     tags: "",
     isFeatured: false,
-    isTrending: false,
   });
 
   const handleFileUpload = async (file: File) => {
@@ -82,16 +81,13 @@ export default function BuatBeritaPage() {
         content: form.content,
         summary: form.summary,
         category: form.category,
-        imageUrl: form.imageUrl,
-        authorId: userData?.uid || "",
-        authorName: userData?.name || "Admin",
-        isFeatured: form.isFeatured,
-        isTrending: form.isTrending,
-        viewCount: 0,
-        likeCount: 0,
+        image_url: form.imageUrl,
+        author_name: userData?.name || "Admin",
+        is_featured: form.isFeatured,
+        view_count: 0,
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-        isActive: true,
-        publishedAt: new Date().toISOString(),
+        is_active: true,
+        published_at: new Date().toISOString(),
       });
       router.push("/admin/berita");
     } catch (err) {
@@ -221,10 +217,6 @@ export default function BuatBeritaPage() {
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="rounded" />
                 Tampilkan di Featured
-              </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.isTrending} onChange={(e) => setForm({ ...form, isTrending: e.target.checked })} className="rounded" />
-                Tandai sebagai Trending
               </label>
             </div>
           </CardContent>
