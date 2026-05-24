@@ -11,6 +11,7 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.santrimendunia.org"),
   title: {
     default: "Santri Mendunia — Dari Pesantren untuk Dunia",
     template: "%s | Santri Mendunia",
