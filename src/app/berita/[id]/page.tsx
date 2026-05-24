@@ -20,12 +20,23 @@ export default function BeritaDetailPage() {
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const item = await getDocument<NewsDetail>(COLLECTIONS.news, id);
+      let item = null;
+      // Cek apakah id adalah UUID (format lama) atau slug (format baru)
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        item = await getDocument<NewsDetail>(COLLECTIONS.news, id);
+      } else {
+        const { getDocuments, where } = await import("@/lib/supabase/client");
+        const items = await getDocuments<NewsDetail>(COLLECTIONS.news, [
+          where("slug", "eq", id)
+        ]);
+        item = items[0] || null;
+      }
+      
       setNews(item);
       setLoading(false);
       // Increment view count
       if (item) {
-        try { await updateDocument(COLLECTIONS.news, id, { viewCount: (item.viewCount || 0) + 1 }); } catch {}
+        try { await updateDocument(COLLECTIONS.news, item.id, { viewCount: (item.viewCount || 0) + 1 }); } catch {}
       }
     })();
   }, [id]);
@@ -68,7 +79,7 @@ export default function BeritaDetailPage() {
         )}
 
         <div 
-          className="prose prose-lg max-w-none mb-8 leading-relaxed overflow-hidden break-words"
+          className="prose prose-lg max-w-none mb-8 leading-relaxed overflow-hidden break-words [&>p]:mb-4"
           dangerouslySetInnerHTML={{ __html: news.content?.replace(/&nbsp;/g, ' ') || '' }}
         />
 

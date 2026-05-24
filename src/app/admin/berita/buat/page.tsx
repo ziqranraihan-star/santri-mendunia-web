@@ -76,6 +76,10 @@ export default function BuatBeritaPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const baseSlug = form.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/(^-|-$)+/g, '');
+      const uniqueSuffix = Math.random().toString(36).substring(2, 7);
+      const slug = `${baseSlug}-${uniqueSuffix}`;
+
       await createDocument(COLLECTIONS.news, {
         title: form.title,
         content: form.content,
@@ -88,6 +92,7 @@ export default function BuatBeritaPage() {
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
         is_active: true,
         published_at: new Date().toISOString(),
+        slug: slug,
       });
       router.push("/admin/berita");
     } catch (err) {

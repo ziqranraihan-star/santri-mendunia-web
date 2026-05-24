@@ -36,7 +36,6 @@ function EditBeritaContent() {
     imageUrl: "",
     tags: "",
     isFeatured: false,
-    isTrending: false,
   });
 
   useEffect(() => {
@@ -55,7 +54,6 @@ function EditBeritaContent() {
           imageUrl: data.imageUrl || "",
           tags: Array.isArray(data.tags) ? data.tags.join(", ") : (data.tags || ""),
           isFeatured: data.isFeatured || false,
-          isTrending: data.isTrending || false,
         });
       }
       setInitialLoading(false);
@@ -112,7 +110,6 @@ function EditBeritaContent() {
         category: form.category,
         imageUrl: form.imageUrl,
         isFeatured: form.isFeatured,
-        isTrending: form.isTrending,
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
       });
       router.push("/admin/berita");
@@ -247,10 +244,6 @@ function EditBeritaContent() {
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="rounded" />
                 Tampilkan di Featured
-              </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.isTrending} onChange={(e) => setForm({ ...form, isTrending: e.target.checked })} className="rounded" />
-                Tandai sebagai Trending
               </label>
             </div>
           </CardContent>

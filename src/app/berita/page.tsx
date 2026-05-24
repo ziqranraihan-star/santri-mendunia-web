@@ -7,7 +7,7 @@ import { getDocuments, COLLECTIONS, orderBy, where } from "@/lib/supabase/client
 import { Badge } from "@/components/ui/badge";
 
 
-interface NewsItem { id: string; title: string; summary: string; category: string; image_url: string; author_name: string; published_at: string; view_count: number; is_active: boolean; }
+interface NewsItem { id: string; slug: string; title: string; summary: string; category: string; image_url: string; author_name: string; published_at: string; view_count: number; is_active: boolean; }
 
 const categories = ["Semua", "Terkini", "Motivasi", "Pendidikan", "Pesantren", "Inspiratif"];
 
@@ -51,7 +51,7 @@ export default function BeritaPage() {
             {filtered.map((item) => {
               const d = item.published_at;
               return (
-                <Link key={item.id} href={`/berita/${item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
+                <Link key={item.id} href={`/berita/${item.slug || item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
                   <div className="h-44 bg-muted relative">
                     {item.image_url && <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
                     <Badge className="absolute top-3 left-3 bg-teal text-white text-xs capitalize">{item.category}</Badge>
