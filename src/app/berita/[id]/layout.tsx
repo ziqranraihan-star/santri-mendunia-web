@@ -26,14 +26,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: item.title,
       description: item.summary || "Baca berita selengkapnya di Santri Mendunia.",
-      images: item.imageUrl ? [item.imageUrl] : [],
+      images: item.imageUrl ? [item.imageUrl] : ["/logo.png"],
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
       title: item.title,
       description: item.summary || "Baca berita selengkapnya di Santri Mendunia.",
-      images: item.imageUrl ? [item.imageUrl] : [],
+      images: item.imageUrl ? [item.imageUrl] : ["/logo.png"],
     },
   };
 }

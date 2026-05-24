@@ -30,6 +30,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "Santri Mendunia",
+    images: ["/logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/logo.png"],
   },
 };
 
