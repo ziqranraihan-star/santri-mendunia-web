@@ -14,7 +14,7 @@ import {
   FileText, Compass, Briefcase, Plane, ShoppingBag, Smartphone
 } from "lucide-react";
 
-interface NewsItem { id: string; title: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; }
+interface NewsItem { id: string; slug?: string; title: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; }
 interface ScholarshipItem { id: string; title: string; provider: string; level: string; deadline: string; category: string; }
 interface CourseItem { id: string; title: string; type: string; level: string; price: number; isFree: boolean; rating: number; thumbnailUrl: string; }
 
