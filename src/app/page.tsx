@@ -152,7 +152,7 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {news.slice(0, 6).map((item, i) => (
-                <Link key={item.id} href={`/berita/detail?id=${item.id}`} className={`group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
+                <Link key={item.id} href={`/berita/${item.id}`} className={`group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
                   <div className={`relative ${i === 0 ? "h-80" : "h-44"} bg-muted`}>
                     {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />}
                     <div className="absolute top-3 left-3">

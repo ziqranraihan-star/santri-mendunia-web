@@ -51,7 +51,7 @@ export default function BeritaPage() {
             {filtered.map((item) => {
               const d = item.published_at;
               return (
-                <Link key={item.id} href={`/berita/detail?id=${item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
+                <Link key={item.id} href={`/berita/${item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
                   <div className="h-44 bg-muted relative">
                     {item.image_url && <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
                     <Badge className="absolute top-3 left-3 bg-teal text-white text-xs capitalize">{item.category}</Badge>

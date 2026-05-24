@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/portal/navbar";
 import Footer from "@/components/portal/footer";
 import { getDocument, updateDocument, COLLECTIONS } from "@/lib/supabase/client";
@@ -8,15 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Eye, Calendar } from "lucide-react";
 import Link from "next/link";
-
-
-
+import { useParams } from "next/navigation";
 
 interface NewsDetail { id: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; }
 
-function BeritaContent() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+export default function BeritaDetailPage() {
+  const params = useParams();
+  const id = params?.id as string;
   const [news, setNews] = useState<NewsDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -70,9 +67,11 @@ function BeritaContent() {
           <p className="text-lg text-muted-foreground italic border-l-4 border-teal pl-4 mb-8">{news.summary}</p>
         )}
 
-        <div className="prose prose-lg max-w-none mb-8 leading-relaxed whitespace-pre-wrap">
-          {news.content}
-        </div>
+        {/* Gunakan dangerouslySetInnerHTML untuk merender tag HTML dari Quill editor */}
+        <div 
+          className="prose prose-lg max-w-none mb-8 leading-relaxed whitespace-pre-wrap"
+          dangerouslySetInnerHTML={{ __html: news.content }}
+        />
 
         {news.tags && news.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
@@ -89,13 +88,5 @@ function BeritaContent() {
       </article>
       <Footer />
     </>
-  );
-}
-
-export default function BeritaDetailPage() {
-  return (
-    <Suspense fallback={null}>
-      <BeritaContent />
-    </Suspense>
   );
 }
