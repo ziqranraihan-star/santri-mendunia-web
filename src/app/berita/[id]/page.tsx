@@ -67,10 +67,9 @@ export default function BeritaDetailPage() {
           <p className="text-lg text-muted-foreground italic border-l-4 border-teal pl-4 mb-8">{news.summary}</p>
         )}
 
-        {/* Gunakan dangerouslySetInnerHTML untuk merender tag HTML dari Quill editor */}
         <div 
-          className="prose prose-lg max-w-none mb-8 leading-relaxed whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{ __html: news.content }}
+          className="prose prose-lg max-w-none mb-8 leading-relaxed overflow-hidden break-words"
+          dangerouslySetInnerHTML={{ __html: news.content?.replace(/&nbsp;/g, ' ') || '' }}
         />
 
         {news.tags && news.tags.length > 0 && (
