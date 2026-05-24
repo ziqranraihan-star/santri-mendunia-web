@@ -66,7 +66,7 @@ export default function HomePage() {
                   </Button>
                 </Link>
                 <Link href="/beasiswa">
-                  <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2">
+                  <Button size="lg" className="bg-white text-teal-deep hover:bg-gray-100 gap-2 font-bold shadow-lg">
                     <GraduationCap className="w-4 h-4" /> Cari Beasiswa
                   </Button>
                 </Link>

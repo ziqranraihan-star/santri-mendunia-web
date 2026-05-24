@@ -7,7 +7,7 @@ import { getDocuments, COLLECTIONS, orderBy, where } from "@/lib/supabase/client
 import { Badge } from "@/components/ui/badge";
 
 
-interface NewsItem { id: string; slug: string; title: string; summary: string; category: string; image_url: string; author_name: string; published_at: string; view_count: number; is_active: boolean; }
+interface NewsItem { id: string; slug: string; title: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; isActive: boolean; }
 
 const categories = ["Semua", "Terkini", "Motivasi", "Pendidikan", "Pesantren", "Inspiratif"];
 
@@ -19,7 +19,7 @@ export default function BeritaPage() {
   useEffect(() => {
     (async () => {
       const items = await getDocuments<NewsItem>(COLLECTIONS.news, [orderBy("published_at", "desc")]);
-      setNews(items.filter((i: any) => i.is_active !== false)); setLoading(false);
+      setNews(items.filter((i: any) => i.isActive !== false)); setLoading(false);
     })();
   }, []);
 
@@ -49,19 +49,19 @@ export default function BeritaPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((item) => {
-              const d = item.published_at;
+              const d = item.publishedAt;
               return (
                 <Link key={item.id} href={`/berita/${item.slug || item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
                   <div className="h-44 bg-muted relative">
-                    {item.image_url && <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
+                    {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
                     <Badge className="absolute top-3 left-3 bg-teal text-white text-xs capitalize">{item.category}</Badge>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold group-hover:text-teal transition-colors line-clamp-2 mb-2">{item.title}</h3>
                     {item.summary && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{item.summary}</p>}
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-                      <span>{item.author_name}</span>
-                      <span>{d ? (new Date(d).toLocaleDateString("id-ID")) : ""} • {item.view_count || 0} views</span>
+                      <span>{item.authorName}</span>
+                      <span>{d ? (new Date(d).toLocaleDateString("id-ID")) : ""} • {item.viewCount || 0} views</span>
                     </div>
                   </div>
                 </Link>
