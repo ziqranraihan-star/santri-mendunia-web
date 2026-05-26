@@ -21,7 +21,7 @@ export default function BuatEbookPage() {
     description: "",
     type: "Buku",
     category: "Pendidikan",
-    coverUrl: "",
+    thumbnailUrl: "",
     fileUrl: "",
     isActive: true,
   });
@@ -35,7 +35,7 @@ export default function BuatEbookPage() {
     const { data, error } = await supabase.storage.from("public").upload(fileName, file, { upsert: false });
     if (error) { alert("Gagal upload gambar"); setUploading(false); return; }
     const { data: urlData } = supabase.storage.from("public").getPublicUrl(fileName);
-    setForm((prev) => ({ ...prev, coverUrl: urlData.publicUrl }));
+    setForm((prev) => ({ ...prev, thumbnailUrl: urlData.publicUrl }));
     setUploading(false);
   };
 
@@ -63,9 +63,9 @@ export default function BuatEbookPage() {
         createdAt: new Date().toISOString(),
       });
       router.push("/admin/ebook");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Gagal menyimpan");
+      alert("Gagal menyimpan: " + (err.message || "Pastikan tabel 'ebooks' di Supabase memiliki kolom 'description', 'thumbnail_url', dan 'file_url'."));
     } finally {
       setLoading(false);
     }
@@ -136,10 +136,10 @@ export default function BuatEbookPage() {
         <Card>
           <CardHeader><CardTitle className="text-base">Cover / Thumbnail</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            {form.coverUrl ? (
+            {form.thumbnailUrl ? (
               <div className="relative group w-40">
-                <img src={form.coverUrl} alt="Cover" className="w-40 h-52 object-cover rounded-lg border" />
-                <button type="button" onClick={() => setForm({ ...form, coverUrl: "" })} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <img src={form.thumbnailUrl} alt="Cover" className="w-40 h-52 object-cover rounded-lg border" />
+                <button type="button" onClick={() => setForm({ ...form, thumbnailUrl: "" })} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <X className="w-3 h-3" />
                 </button>
               </div>
