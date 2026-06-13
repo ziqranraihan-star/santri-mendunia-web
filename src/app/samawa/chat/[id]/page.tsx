@@ -6,7 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/portal/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { useAuth } from "@/lib/auth";
 import { supabase, createDocument, updateDocument, COLLECTIONS } from "@/lib/supabase/client";
 import { Send, ShieldAlert, AlertTriangle, ArrowLeft, HeartHandshake, XCircle } from "lucide-react";
@@ -137,7 +137,7 @@ export default function ChatSamawaPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Chat Area */}
-        <ScrollArea className="flex-1 p-4 bg-slate-50" ref={scrollRef}>
+        <div className="flex-1 p-4 bg-slate-50 overflow-y-auto" ref={scrollRef}>
           <div className="space-y-4 pb-4">
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl text-sm text-center mb-6">
               <strong>Adab Chat Ta'aruf:</strong> Gunakan bahasa yang sopan, fokus pada persiapan pernikahan, tidak membahas hal-hal yang kurang pantas, dan ingat bahwa percakapan ini dapat dipantau oleh Musyrif.
@@ -166,7 +166,7 @@ export default function ChatSamawaPage({ params }: { params: Promise<{ id: strin
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Chat Input */}
         <div className="p-4 bg-white border-t">
