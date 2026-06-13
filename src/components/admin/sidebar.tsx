@@ -38,7 +38,7 @@ const menuItems = [
   { label: "Kursus", href: "/admin/kursus", icon: BookOpen },
   { label: "Pusat Pelatihan", href: "/admin/tes", icon: Award },
   { label: "Ruang Karya", href: "/admin/ebook", icon: FileText },
-  { label: "Info Pesantren", href: "/admin/mentor", icon: Compass },
+  { label: "Info Pesantren", href: "/admin/pesantren", icon: Compass },
   { type: "separator" as const, label: "Layanan" },
   { label: "Job & Magang", href: "/admin/lowongan", icon: Briefcase },
   { label: "Tour & Travel", href: "/admin/trip", icon: Plane },

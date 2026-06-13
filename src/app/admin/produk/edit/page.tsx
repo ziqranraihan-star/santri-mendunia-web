@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createDocument, COLLECTIONS } from "@/lib/supabase/client";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getDocument, updateDocument, COLLECTIONS } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,20 +11,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
-export default function BuatProdukPage() {
-  const router = useRouter(); const [loading, setLoading] = useState(false);
+function EditProdukForm() {
+  const router = useRouter(); const searchParams = useSearchParams(); const id = searchParams.get("id");
+  const [loading, setLoading] = useState(false); const [initialLoading, setInitialLoading] = useState(true);
   const [form, setForm] = useState({ name: "", description: "", category: "makanan", price: "0", stock: "0", weight: "", pesantrenName: "", imageUrl: "" });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  useEffect(() => {
+    if (!id) { router.push("/admin/produk"); return; }
+    getDocument(COLLECTIONS.products, id).then((data: any) => {
+      if (data) setForm({ name: data.name || "", description: data.description || "", category: data.category || "makanan", price: data.price?.toString() || "0", stock: data.stock?.toString() || "0", weight: data.weight?.toString() || "", pesantrenName: data.pesantrenName || "", imageUrl: data.imageUrl || "" });
+      setInitialLoading(false);
+    });
+  }, [id, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true);
     try {
-      await createDocument(COLLECTIONS.products, { name: form.name, description: form.description, category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName, sellerId: "", imageUrl: form.imageUrl, isFeatured: false, isActive: true, soldCount: 0, rating: 0 });
+      if (id) await updateDocument(COLLECTIONS.products, id, { name: form.name, description: form.description, category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName, imageUrl: form.imageUrl });
       router.push("/admin/produk");
     } catch { alert("Gagal"); } finally { setLoading(false); }
   };
+  if (initialLoading) return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4"><Link href="/admin/produk"><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link><h1 className="text-2xl font-bold text-teal-deep">Tambah Produk</h1></div>
+      <div className="flex items-center gap-4"><Link href="/admin/produk"><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link><h1 className="text-2xl font-bold text-teal-deep">Edit Produk</h1></div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card><CardContent className="pt-6 space-y-4">
           <div className="space-y-2"><Label>Nama Produk *</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} required /></div>
@@ -41,5 +52,13 @@ export default function BuatProdukPage() {
         <div className="flex justify-end gap-3"><Link href="/admin/produk"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>
+  );
+}
+
+export default function EditProdukPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Memuat...</div>}>
+      <EditProdukForm />
+    </Suspense>
   );
 }

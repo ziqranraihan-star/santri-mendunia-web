@@ -16,5 +16,5 @@ const columns: Column<UserItem>[] = [
 export default function PenggunaPage() {
   const [data, setData] = useState<UserItem[]>([]); const [loading, setLoading] = useState(true);
   useEffect(() => { (async () => { const items = await getDocuments<UserItem>(COLLECTIONS.users, [orderBy("createdAt", "desc")]); setData(items); setLoading(false); })(); }, []);
-  return <DataTable title="Pengguna" description="Kelola data pengguna aplikasi" columns={columns} data={data} loading={loading} searchField={"name" as keyof UserItem} />;
+  return <DataTable title="Pengguna" description="Kelola data pengguna aplikasi" columns={columns} data={data} loading={loading} editHref={(id) => `/admin/pengguna/edit?id=${id}`} searchField={"name" as keyof UserItem} />;
 }

@@ -24,6 +24,7 @@ export const COLLECTIONS = {
   samawaProfiles: "samawa_profiles",
   taarufRequests: "taaruf_requests",
   taarufMessages: "taaruf_messages",
+  pesantren: "pesantren",
 } as const;
 
 // ─── Konverter camelCase ↔ snake_case ────────────────────────────────────────
