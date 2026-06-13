@@ -83,7 +83,7 @@ export default function DaftarSamawaPage() {
     setLoading(true);
     try {
       // Check if already registered
-      const existing = await getDocuments(COLLECTIONS.samawaProfiles, [where("user_id", "eq", userData.uid)]);
+      const existing = await getDocuments(COLLECTIONS.samawaProfiles, [where("user_id", "eq", userData?.uid)]);
       if (existing.length > 0) {
         alert("Anda sudah pernah mendaftar di Samawa Space.");
         setLoading(false);
@@ -91,7 +91,7 @@ export default function DaftarSamawaPage() {
       }
 
       await createDocument(COLLECTIONS.samawaProfiles, {
-        userId: userData.uid,
+        userId: userData?.uid,
         gender: form.gender,
         ktpUrl: form.ktpUrl,
         recommendationUrl: form.recommendationUrl,

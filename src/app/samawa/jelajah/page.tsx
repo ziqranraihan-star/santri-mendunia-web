@@ -36,7 +36,7 @@ export default function JelajahSamawaPage() {
     (async () => {
       try {
         // Cek profil sendiri
-        const myProfiles = await getDocuments(COLLECTIONS.samawaProfiles, [where("user_id", "eq", userData.uid)]);
+        const myProfiles = await getDocuments(COLLECTIONS.samawaProfiles, [where("user_id", "eq", userData?.uid)]);
         if (myProfiles.length === 0 || myProfiles[0].status !== "verified") {
           setMyProfile(myProfiles.length > 0 ? myProfiles[0] : null);
           setLoading(false);
@@ -72,7 +72,7 @@ export default function JelajahSamawaPage() {
         const { data: existingRequests } = await supabase
           .from("taaruf_requests")
           .select("receiver_id")
-          .eq("sender_id", userData.uid);
+          .eq("sender_id", userData?.uid);
           
         const requestedIds = existingRequests?.map(r => r.receiver_id) || [];
         

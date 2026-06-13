@@ -112,7 +112,7 @@ export default function ChatSamawaPage({ params }: { params: Promise<{ id: strin
   if (loading || !requestInfo) return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
 
   const isClosed = requestInfo.status !== "chat_active";
-  const partnerName = userData.uid === requestInfo.sender_id ? requestInfo.receiver?.name : requestInfo.sender?.name;
+  const partnerName = userData?.uid === requestInfo.sender_id ? requestInfo.receiver?.name : requestInfo.sender?.name;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
@@ -144,7 +144,7 @@ export default function ChatSamawaPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {messages.map((msg, i) => {
-              const isMe = msg.sender_id === userData.uid;
+              const isMe = msg.sender_id === userData?.uid;
               
               if (msg.is_system) {
                 return (
