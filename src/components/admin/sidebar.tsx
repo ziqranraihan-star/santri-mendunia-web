@@ -22,6 +22,8 @@ import {
   X,
   Sparkles,
   Compass,
+  ShieldAlert,
+  HeartHandshake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,7 +43,8 @@ const menuItems = [
   { label: "Job & Magang", href: "/admin/lowongan", icon: Briefcase },
   { label: "Tour & Travel", href: "/admin/trip", icon: Plane },
   { label: "INKOPONTREN", href: "/admin/produk", icon: ShoppingBag },
-  { label: "Donasi", href: "/admin/donasi", icon: Heart },
+  { label: "Donasi", href: "/admin/donasi", icon: HeartHandshake },
+  { label: "Samawa Space", href: "/admin/samawa", icon: ShieldAlert },
   { type: "separator" as const, label: "Sistem" },
   { label: "Banner", href: "/admin/banner", icon: Image },
   { label: "Pengguna", href: "/admin/pengguna", icon: Users },
@@ -50,8 +53,22 @@ const menuItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const { userData, signOut } = useAuth();
+  const { userData, isAdmin, isPic, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Filter menu items based on role
+  const visibleMenuItems = menuItems.filter((item) => {
+    if ("type" in item && item.type === "separator") return true; // Keep separators for now, can be optimized later
+    if (!item.href) return false;
+    if (isAdmin) return true; // Admin sees everything
+    if (isPic) {
+      if (item.href === "/admin/dashboard") return true;
+      if (userData?.managedMenus) {
+        return userData.managedMenus.some((menu) => item.href!.startsWith(menu));
+      }
+    }
+    return false;
+  });
 
   const nav = (
     <div className="flex flex-col h-full">
@@ -70,7 +87,7 @@ export default function AdminSidebar() {
 
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-        {menuItems.map((item, i) => {
+        {visibleMenuItems.map((item, i) => {
           if ("type" in item && item.type === "separator") {
             return (
               <div key={i} className="pt-4 pb-1.5 px-3">

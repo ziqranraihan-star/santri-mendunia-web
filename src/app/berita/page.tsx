@@ -61,7 +61,7 @@ export default function BeritaPage() {
                     {item.summary && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{item.summary}</p>}
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
                       <span>{item.authorName}</span>
-                      <span>{d ? (new Date(d).toLocaleDateString("id-ID")) : ""} • {item.viewCount || 0} views</span>
+                      <span>{d ? (new Date(d).toLocaleDateString("id-ID")) : ""}</span>
                     </div>
                   </div>
                 </Link>

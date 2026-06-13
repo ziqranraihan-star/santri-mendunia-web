@@ -446,7 +446,7 @@ function ProgramCard({ item, catColor }: { item: typeof programs[0]["items"][0];
 
       <div className="px-6 pb-6">
         <a
-          href="https://wa.me/6281234567890?text=Halo%20Santri%20Mendunia%2C%20saya%20ingin%20mendaftar%20program%20"
+          href="https://wa.me/6282114252819?text=Halo%20Santri%20Mendunia%2C%20saya%20ingin%20mendaftar%20program%20"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm bg-teal text-white hover:bg-teal-dark transition-colors"
@@ -520,7 +520,7 @@ export default function TesPublicPage() {
           <h2 className="text-2xl font-bold mb-2">Siap Meningkatkan Kompetensimu?</h2>
           <p className="text-white/80 mb-6">Konsultasikan program yang sesuai dengan tujuanmu bersama tim Santri Mendunia.</p>
           <a
-            href="https://wa.me/6281234567890?text=Halo%20Santri%20Mendunia%2C%20saya%20ingin%20konsultasi%20program%20pelatihan"
+            href="https://wa.me/6282114252819?text=Halo%20Santri%20Mendunia%2C%20saya%20ingin%20konsultasi%20program%20pelatihan"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white text-teal-deep font-bold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors shadow-lg"

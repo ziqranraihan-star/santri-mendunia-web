@@ -21,6 +21,9 @@ export const COLLECTIONS = {
   notifications: "notifications",
   orders: "orders",
   donations: "donations",
+  samawaProfiles: "samawa_profiles",
+  taarufRequests: "taaruf_requests",
+  taarufMessages: "taaruf_messages",
 } as const;
 
 // ─── Konverter camelCase ↔ snake_case ────────────────────────────────────────

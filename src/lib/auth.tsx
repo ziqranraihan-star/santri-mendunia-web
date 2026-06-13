@@ -9,6 +9,10 @@ interface UserData {
   name: string;
   role: string;
   photoUrl?: string;
+  username?: string;
+  phoneNumber?: string;
+  pesantren?: string;
+  managedMenus?: string[];
 }
 
 interface AuthContextType {
@@ -16,6 +20,7 @@ interface AuthContextType {
   userData: UserData | null;
   loading: boolean;
   isAdmin: boolean;
+  isPic: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -57,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserData({
           uid: data.id,
           ...data,
+          managedMenus: data.managed_menus || [],
         } as UserData);
       } else {
         // Jika tidak ada di tabel users, mungkin dia baru sign up. 
@@ -87,9 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("id", data.user.id)
         .single();
       
-      if (userDoc && userDoc.role !== "admin") {
+      if (userDoc && userDoc.role !== "admin" && userDoc.role !== "pic") {
         await supabase.auth.signOut();
-        throw new Error("Akses ditolak. Hanya admin yang dapat masuk.");
+        throw new Error("Akses ditolak. Hanya admin atau PIC yang dapat masuk.");
       }
     }
   };
@@ -107,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userData,
         loading,
         isAdmin: userData?.role === "admin",
+        isPic: userData?.role === "pic",
         signIn,
         signOut,
       }}
@@ -136,6 +143,37 @@ export async function createAdminAccount(email: string, password: string, name: 
       email: data.user.email,
       name: name,
       role: "admin"
+    });
+  }
+}
+
+// ── Helper: Register Regular User ──
+export async function signUpUser(data: {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  pesantren: string;
+}) {
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+  });
+  if (error) throw new Error(error.message);
+  
+  if (authData.user) {
+    // Insert with snake_case because we are using raw supabase client here
+    // But wait, the client automatically handles it if we use createDocument. 
+    // Here we use raw insert, so we map to snake_case.
+    await supabase.from("users").insert({
+      id: authData.user.id,
+      email: authData.user.email,
+      name: data.name,
+      role: "user",
+      username: data.username,
+      phone_number: data.phoneNumber,
+      pesantren: data.pesantren
     });
   }
 }

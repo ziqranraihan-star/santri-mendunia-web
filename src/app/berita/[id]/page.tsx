@@ -9,7 +9,7 @@ import { ArrowLeft, Share2, Eye, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-interface NewsDetail { id: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; }
+interface NewsDetail { id: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
 
 export default function BeritaDetailPage() {
   const params = useParams();
@@ -62,10 +62,19 @@ export default function BeritaDetailPage() {
         <Badge className="bg-teal text-white capitalize mb-4">{news.category}</Badge>
         <h1 className="text-3xl lg:text-4xl font-bold text-teal-deep leading-tight mb-4">{news.title}</h1>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-          <span className="font-medium text-foreground">{news.authorName}</span>
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
+          {news.authors && news.authors.length > 0 ? (
+            <span className="font-medium text-foreground">Oleh: {news.authors.join(", ")}</span>
+          ) : (
+            <span className="font-medium text-foreground">{news.authorName}</span>
+          )}
+          
+          {news.editors && news.editors.length > 0 && (
+            <span className="font-medium text-foreground bg-muted px-2 py-1 rounded-md text-xs">Editor: {news.editors.join(", ")}</span>
+          )}
+
           {publishDate && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {(new Date(publishDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }))}</span>}
-          <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {news.viewCount} views</span>
+          {/* View Count has been hidden from public as requested */}
         </div>
 
         {news.imageUrl && (
@@ -86,6 +95,24 @@ export default function BeritaDetailPage() {
         {news.tags && news.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
             {news.tags.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}
+          </div>
+        )}
+
+        {news.relatedLinks && news.relatedLinks.length > 0 && (
+          <div className="my-8 bg-teal-surface/30 p-6 rounded-xl border border-teal/10">
+            <h3 className="font-bold text-teal-deep mb-4 flex items-center gap-2">
+              <span className="w-1.5 h-5 bg-gold rounded-full"></span>
+              Berita Terkait
+            </h3>
+            <ul className="space-y-3">
+              {news.relatedLinks.map((link, i) => (
+                <li key={i}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-teal hover:text-teal-dark hover:underline font-medium flex items-start gap-2">
+                    <span className="text-gold mt-1">▪</span> {link.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

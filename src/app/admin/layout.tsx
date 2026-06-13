@@ -6,18 +6,28 @@ import { useEffect } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, userData, loading, isAdmin } = useAuth();
+  const { user, userData, loading, isAdmin, isPic } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
         router.push("/login");
-      } else if (userData && !isAdmin) {
+      } else if (userData && !isAdmin && !isPic) {
         router.push("/login");
+      } else if (isPic && userData?.managedMenus) {
+        // Cek jika ini bukan halaman dashboard
+        const path = window.location.pathname;
+        if (path !== "/admin/dashboard" && path !== "/admin") {
+          // Cari apakah path saat ini ada di managedMenus
+          const isAllowed = userData.managedMenus.some(menu => path.startsWith(menu));
+          if (!isAllowed) {
+            router.push("/admin/dashboard");
+          }
+        }
       }
     }
-  }, [user, userData, loading, isAdmin, router]);
+  }, [user, userData, loading, isAdmin, isPic, router]);
 
   if (loading) {
     return (
@@ -30,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || (!isAdmin && !isPic)) return null;
 
   return (
     <div className="min-h-screen bg-muted/30">

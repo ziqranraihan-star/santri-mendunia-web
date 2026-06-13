@@ -21,6 +21,7 @@ const dropdownLinks = [
   { label: "Job & Magang", href: "/lowongan" },
   { label: "Tour & Travel", href: "/trip" },
   { label: "INKOPONTREN", href: "/produk" },
+  { label: "Samawa Space", href: "/samawa" },
 ];
 
 const rightLinks = [
@@ -362,6 +363,7 @@ export default function Navbar() {
                       { label: "💼 Lowongan Kerja", href: "/lowongan" },
                       { label: "📖 E-Book", href: "/ebook" },
                       { label: "✈️ Tour & Travel", href: "/trip" },
+                      { label: "💍 Samawa Space", href: "/samawa" },
                     ].map((item) => (
                       <button
                         key={item.href}

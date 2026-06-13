@@ -33,7 +33,23 @@ export default function BuatBeritaPage() {
     imageUrl: "",
     tags: "",
     isFeatured: false,
+    isTrending: false,
+    authors: "",
+    editors: "",
+    relatedLinks: [] as {title: string, url: string}[],
   });
+
+  const addRelatedLink = () => setForm({...form, relatedLinks: [...form.relatedLinks, {title: "", url: ""}]});
+  const updateRelatedLink = (index: number, key: "title" | "url", value: string) => {
+    const newLinks = [...form.relatedLinks];
+    newLinks[index][key] = value;
+    setForm({ ...form, relatedLinks: newLinks });
+  };
+  const removeRelatedLink = (index: number) => {
+    const newLinks = [...form.relatedLinks];
+    newLinks.splice(index, 1);
+    setForm({ ...form, relatedLinks: newLinks });
+  };
 
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -93,6 +109,10 @@ export default function BuatBeritaPage() {
         is_active: true,
         published_at: new Date().toISOString(),
         slug: slug,
+        authors: form.authors ? form.authors.split(",").map(a => a.trim()).filter(Boolean) : [userData?.name || "Admin"],
+        editors: form.editors ? form.editors.split(",").map(e => e.trim()).filter(Boolean) : [],
+        is_trending: form.isTrending,
+        related_links: form.relatedLinks.filter(l => l.title && l.url),
       });
       router.push("/admin/berita");
     } catch (err) {
@@ -126,6 +146,16 @@ export default function BuatBeritaPage() {
             <div className="space-y-2">
               <Label htmlFor="summary">Ringkasan</Label>
               <Textarea id="summary" placeholder="Ringkasan singkat berita..." rows={2} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="authors">Penulis (pisahkan koma)</Label>
+                <Input id="authors" placeholder="Fulan, Fulana" value={form.authors} onChange={(e) => setForm({ ...form, authors: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editors">Editor (pisahkan koma)</Label>
+                <Input id="editors" placeholder="Budi, Siti" value={form.editors} onChange={(e) => setForm({ ...form, editors: e.target.value })} />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="content">Konten Berita *</Label>
@@ -218,11 +248,35 @@ export default function BuatBeritaPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-2 text-sm cursor-pointer w-fit">
                 <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="rounded" />
-                Tampilkan di Featured
+                Tampilkan di Featured (Slider)
               </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer w-fit">
+                <input type="checkbox" checked={form.isTrending} onChange={(e) => setForm({ ...form, isTrending: e.target.checked })} className="rounded text-gold focus:ring-gold" />
+                Tampilkan di Trending/Homepage App
+              </label>
+            </div>
+
+            <div className="space-y-3 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label>Berita Terkait</Label>
+                <Button type="button" size="sm" variant="outline" onClick={addRelatedLink}>
+                  + Tambah Link
+                </Button>
+              </div>
+              {form.relatedLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-start">
+                  <div className="flex-1 space-y-2">
+                    <Input placeholder="Judul Berita Terkait" value={link.title} onChange={(e) => updateRelatedLink(i, "title", e.target.value)} />
+                    <Input placeholder="URL (https://...)" value={link.url} onChange={(e) => updateRelatedLink(i, "url", e.target.value)} />
+                  </div>
+                  <Button type="button" size="icon" variant="destructive" onClick={() => removeRelatedLink(i)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
