@@ -161,7 +161,7 @@ export default function DaftarSamawaPage() {
             <CardContent className="space-y-6">
               <div className="space-y-3">
                 <Label>Jenis Kelamin (Ikhwan / Akhwat) <span className="text-red-500">*</span></Label>
-                <Select value={form.gender} onValueChange={(v) => setForm({...form, gender: v})} required>
+                <Select value={form.gender} onValueChange={(v) => setForm({...form, gender: v || ""})} required>
                   <SelectTrigger><SelectValue placeholder="Pilih..." /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Ikhwan">Ikhwan (Laki-laki)</SelectItem>
