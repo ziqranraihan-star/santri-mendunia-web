@@ -7,6 +7,7 @@ import Footer from "@/components/portal/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
 import { supabase, createDocument, COLLECTIONS, getDocuments, where } from "@/lib/supabase/client";
