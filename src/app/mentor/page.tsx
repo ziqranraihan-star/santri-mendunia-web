@@ -1,29 +1,61 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Navbar from "@/components/portal/navbar";
 import Footer from "@/components/portal/footer";
 import { getDocuments, COLLECTIONS, orderBy } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Compass, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Building2, Compass, ExternalLink, MapPin } from "lucide-react";
 
-interface MentorItem { id: string; name: string; institution: string; role: string; profileUrl: string; contactUrl: string; isActive: boolean; }
+interface MentorItem {
+  id: string;
+  name: string;
+  institution: string;
+  role: string;
+  profileUrl: string;
+  contactUrl: string;
+  isActive: boolean;
+}
+
+interface PesantrenItem {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  location?: string;
+  websiteUrl?: string;
+  imageUrl?: string;
+  isActive: boolean;
+}
 
 export default function MentorPublicPage() {
-  const [data, setData] = useState<MentorItem[]>([]);
+  const [mentors, setMentors] = useState<MentorItem[]>([]);
+  const [pesantren, setPesantren] = useState<PesantrenItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [pesantrenItems, mentorItems] = await Promise.all([
+        getDocuments<PesantrenItem>(COLLECTIONS.pesantren, [orderBy("createdAt", "desc")]),
+        getDocuments<MentorItem>(COLLECTIONS.mentors, [orderBy("createdAt", "desc")]),
+      ]);
+
+      setPesantren(pesantrenItems.filter((item) => item.isActive !== false));
+      setMentors(mentorItems.filter((item) => item.isActive !== false));
+    } catch (e) {
+      console.error(e);
+      setError("Data pesantren dan mentor belum bisa dimuat. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      try {
-        const items = await getDocuments<MentorItem>(COLLECTIONS.mentors, [orderBy("createdAt", "desc")]);
-        setData(items.filter((x: any) => x.isActive !== false));
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadData();
   }, []);
 
   return (
@@ -39,39 +71,102 @@ export default function MentorPublicPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />)}
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />)}
           </div>
-        ) : data.length === 0 ? (
+        ) : error ? (
           <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
-            <p className="text-muted-foreground font-medium">Belum ada data mentor yang tersedia.</p>
+            <p className="text-muted-foreground font-medium mb-4">{error}</p>
+            <Button onClick={loadData} className="bg-teal hover:bg-teal-dark">Coba Lagi</Button>
+          </div>
+        ) : pesantren.length === 0 && mentors.length === 0 ? (
+          <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
+            <p className="text-muted-foreground font-medium">Belum ada data pesantren atau mentor yang tersedia.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {data.map((s) => (
-              <div key={s.id} className="bg-white rounded-xl border p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                <div className="w-24 h-24 rounded-full bg-muted overflow-hidden mb-4 border-4 border-teal/10">
-                  {s.profileUrl ? (
-                    <img src={s.profileUrl} alt={s.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-3xl font-bold bg-teal/5">
-                      {s.name.charAt(0).toUpperCase()}
+          <div className="space-y-10">
+            {pesantren.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Building2 className="w-5 h-5 text-teal" />
+                  <h2 className="text-xl font-semibold text-teal-deep">Info Pesantren</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {pesantren.map((item) => (
+                    <div key={item.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="h-40 bg-muted">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-teal/5 text-teal">
+                            <Building2 className="w-10 h-10" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <h3 className="text-lg font-semibold leading-snug">{item.name}</h3>
+                          {item.category && <Badge variant="outline" className="capitalize shrink-0">{item.category}</Badge>}
+                        </div>
+                        {item.location && (
+                          <p className="text-sm text-muted-foreground flex gap-1.5 mb-3">
+                            <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                            <span>{item.location}</span>
+                          </p>
+                        )}
+                        {item.description && <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{item.description}</p>}
+                        {item.websiteUrl && (
+                          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" className="w-full gap-2">
+                              Kunjungi Website <ExternalLink className="w-3 h-3" />
+                            </Button>
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-                <h3 className="text-lg font-semibold mb-1">{s.name}</h3>
-                <Badge variant="secondary" className="mb-3 text-xs bg-teal/5 text-teal">{s.role}</Badge>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{s.institution}</p>
-                <div className="mt-auto w-full">
-                  {s.contactUrl && (
-                    <a href={s.contactUrl} target="_blank" rel="noopener noreferrer" className="w-full">
-                      <Button className="w-full bg-[#10B981] hover:bg-[#059669] gap-2">
-                        Hubungi <ExternalLink className="w-3 h-3" />
-                      </Button>
-                    </a>
-                  )}
-                </div>
+              </section>
+            )}
+
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Compass className="w-5 h-5 text-teal" />
+                <h2 className="text-xl font-semibold text-teal-deep">Mentor</h2>
               </div>
-            ))}
+              {mentors.length === 0 ? (
+                <div className="text-center py-14 bg-muted/30 rounded-2xl border border-dashed">
+                  <p className="text-muted-foreground font-medium">Belum ada data mentor yang tersedia.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                  {mentors.map((item) => (
+                    <div key={item.id} className="bg-white rounded-xl border p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                      <div className="w-24 h-24 rounded-full bg-muted overflow-hidden mb-4 border-4 border-teal/10">
+                        {item.profileUrl ? (
+                          <img src={item.profileUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-3xl font-bold bg-teal/5">
+                            {item.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-semibold mb-1">{item.name}</h3>
+                      <Badge variant="secondary" className="mb-3 text-xs bg-teal/5 text-teal">{item.role}</Badge>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{item.institution}</p>
+                      <div className="mt-auto w-full">
+                        {item.contactUrl && (
+                          <a href={item.contactUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                            <Button className="w-full bg-[#10B981] hover:bg-[#059669] gap-2">
+                              Hubungi <ExternalLink className="w-3 h-3" />
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </main>

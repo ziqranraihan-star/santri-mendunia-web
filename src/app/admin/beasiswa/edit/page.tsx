@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createDocument, COLLECTIONS, supabase } from "@/lib/supabase/client";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getDocument, updateDocument, COLLECTIONS, supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,13 +18,59 @@ function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9.]/g, "_");
 }
 
-export default function BuatBeasiswaPage() {
+function listToText(value: unknown) {
+  return Array.isArray(value) ? value.join("\n") : "";
+}
+
+function EditBeasiswaContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", provider: "", category: "dalam_negeri", level: "s1", region: "", country: "", registrationUrl: "", deadline: "", imageUrl: "", benefits: "", requirements: "", documents: "", tips: "" });
-  const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const [form, setForm] = useState({ title: "", description: "", provider: "", category: "dalam_negeri", level: "s1", region: "", country: "", registrationUrl: "", deadline: "", imageUrl: "", benefits: "", requirements: "", documents: "", tips: "", isActive: true });
+  const set = (k: string, v: string | boolean) => setForm((p) => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    if (!id) {
+      router.push("/admin/beasiswa");
+      return;
+    }
+
+    getDocument(COLLECTIONS.scholarships, id)
+      .then((data: any) => {
+        if (!data) {
+          router.push("/admin/beasiswa");
+          return;
+        }
+
+        const deadline = data.deadline ? new Date(data.deadline).toISOString().slice(0, 10) : "";
+        setForm({
+          title: data.title || "",
+          description: data.description || "",
+          provider: data.provider || "",
+          category: data.category || "dalam_negeri",
+          level: data.level || "s1",
+          region: data.region || "",
+          country: data.country || "",
+          registrationUrl: data.registrationUrl || "",
+          deadline,
+          imageUrl: data.imageUrl || "",
+          benefits: listToText(data.benefits),
+          requirements: listToText(data.requirements),
+          documents: listToText(data.documents),
+          tips: data.tips || "",
+          isActive: data.isActive !== false,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Gagal memuat data beasiswa");
+      })
+      .finally(() => setInitialLoading(false));
+  }, [id, router]);
 
   const handleImageUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -58,9 +104,11 @@ export default function BuatBeasiswaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!id) return;
+
     setLoading(true);
     try {
-      await createDocument(COLLECTIONS.scholarships, {
+      await updateDocument(COLLECTIONS.scholarships, id, {
         title: form.title,
         description: form.description,
         provider: form.provider,
@@ -75,9 +123,7 @@ export default function BuatBeasiswaPage() {
         benefits: form.benefits.split("\n").map((item) => item.trim()).filter(Boolean),
         requirements: form.requirements.split("\n").map((item) => item.trim()).filter(Boolean),
         documents: form.documents.split("\n").map((item) => item.trim()).filter(Boolean),
-        isFeatured: false,
-        isActive: true,
-        viewCount: 0,
+        isActive: form.isActive,
       });
       router.push("/admin/beasiswa");
     } catch (error) {
@@ -88,11 +134,15 @@ export default function BuatBeasiswaPage() {
     }
   };
 
+  if (initialLoading) {
+    return <div className="text-center py-20">Memuat...</div>;
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/beasiswa"><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link>
-        <div><h1 className="text-2xl font-bold text-teal-deep">Tambah Beasiswa</h1></div>
+        <div><h1 className="text-2xl font-bold text-teal-deep">Edit Beasiswa</h1></div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card><CardHeader><CardTitle className="text-base">Informasi Utama</CardTitle></CardHeader><CardContent className="space-y-4">
@@ -148,6 +198,10 @@ export default function BuatBeasiswaPage() {
               </button>
             )}
           </div>
+          <label className="flex items-center gap-2 text-sm cursor-pointer w-fit">
+            <input type="checkbox" checked={form.isActive} onChange={(e) => set("isActive", e.target.checked)} className="rounded" />
+            Aktif dan tampil di publik
+          </label>
         </CardContent></Card>
         <Card><CardHeader><CardTitle className="text-base">Detail (satu per baris)</CardTitle></CardHeader><CardContent className="space-y-4">
           <div className="space-y-2"><Label>Benefit</Label><Textarea rows={3} value={form.benefits} onChange={(e) => set("benefits", e.target.value)} /></div>
@@ -158,5 +212,13 @@ export default function BuatBeasiswaPage() {
         <div className="flex justify-end gap-3"><Link href="/admin/beasiswa"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>
+  );
+}
+
+export default function EditBeasiswaPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20">Memuat...</div>}>
+      <EditBeasiswaContent />
+    </Suspense>
   );
 }
