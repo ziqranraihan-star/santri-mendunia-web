@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS public.taaruf_messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Set Row Level Security (opsional, jika RLS aktif)
--- ALTER TABLE public.samawa_profiles ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.taaruf_requests ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.taaruf_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.samawa_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.taaruf_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.taaruf_messages ENABLE ROW LEVEL SECURITY;
+
+-- Run ../../secure_supabase.sql after this file to install the final access policies.

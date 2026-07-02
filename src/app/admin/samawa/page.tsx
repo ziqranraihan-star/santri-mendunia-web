@@ -24,7 +24,27 @@ export default function AdminSamawaPage() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProfiles(data || []);
+
+      const withSignedUrls = await Promise.all(
+        (data || []).map(async (profile) => {
+          const [ktp, recommendation] = await Promise.all([
+            profile.ktp_url
+              ? supabase.storage.from("private").createSignedUrl(profile.ktp_url, 300)
+              : Promise.resolve({ data: null }),
+            profile.recommendation_url
+              ? supabase.storage.from("private").createSignedUrl(profile.recommendation_url, 300)
+              : Promise.resolve({ data: null }),
+          ]);
+
+          return {
+            ...profile,
+            ktp_signed_url: ktp.data?.signedUrl,
+            recommendation_signed_url: recommendation.data?.signedUrl,
+          };
+        })
+      );
+
+      setProfiles(withSignedUrls);
     } catch (err) {
       console.error(err);
     } finally {
@@ -88,10 +108,10 @@ export default function AdminSamawaPage() {
                 <div>
                   <span className="text-xs font-bold text-gray-500 uppercase">Dokumen</span>
                   <div className="flex gap-2 mt-1">
-                    <a href={p.ktp_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <a href={p.ktp_signed_url || "#"} target="_blank" rel="noopener noreferrer" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-2"><Eye className="w-3 h-3" /> Cek KTP</Button>
                     </a>
-                    <a href={p.recommendation_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <a href={p.recommendation_signed_url || "#"} target="_blank" rel="noopener noreferrer" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-2"><Eye className="w-3 h-3" /> Cek Rekomendasi</Button>
                     </a>
                   </div>

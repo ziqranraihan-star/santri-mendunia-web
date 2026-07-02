@@ -1,7 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
+import { objectToCamel, objectToSnake, toSnakeCase } from "@/lib/casing";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://qksagkeydvcewlujfyqs.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrc2Fna2V5ZHZjZXdsdWpmeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE3MjcsImV4cCI6MjA5NDcwNzcyN30.ETjdbiQFBSv3uiZvB5ymSQ_ltp9qpjBqoWOYnTsQySQ";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Missing Supabase public configuration. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -27,57 +34,53 @@ export const COLLECTIONS = {
   pesantren: "pesantren",
 } as const;
 
-// ─── Konverter camelCase ↔ snake_case ────────────────────────────────────────
-// Semua kolom di database Supabase menggunakan snake_case.
-// Fungsi ini memastikan data yang dikirim dan diterima selalu konsisten.
+export { objectToCamel, objectToSnake, toCamelCase, toSnakeCase } from "@/lib/casing";
 
-/** Ubah satu kata camelCase → snake_case, contoh: "imageUrl" → "image_url" */
-function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
-
-/** Rekursif: ubah semua key object dari camelCase ke snake_case */
-function objectToSnake(obj: any): any {
-  if (Array.isArray(obj)) return obj.map(objectToSnake);
-  if (obj !== null && typeof obj === "object" && !(obj instanceof Date)) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [toSnakeCase(k), objectToSnake(v)])
-    );
-  }
-  return obj;
-}
-
-/** Ubah satu kata snake_case → camelCase, contoh: "image_url" → "imageUrl" */
-function toCamelCase(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-/** Rekursif: ubah semua key object dari snake_case ke camelCase */
-function objectToCamel(obj: any): any {
-  if (Array.isArray(obj)) return obj.map(objectToCamel);
-  if (obj !== null && typeof obj === "object" && !(obj instanceof Date)) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [toCamelCase(k), objectToCamel(v)])
-    );
-  }
-  return obj;
-}
-// ─────────────────────────────────────────────────────────────────────────────
+type QueryConstraint =
+  | { type: "orderBy"; field: string; direction: "asc" | "desc" }
+  | { type: "where"; field: string; op: string; value: unknown };
 
 export async function getDocuments<T = any>(
   collectionName: string,
-  constraints: any[] = [],
+  constraints: QueryConstraint[] = [],
   limitCount?: number
-): Promise<any[]> {
+): Promise<T[]> {
   let query: any = supabase.from(collectionName).select("*");
 
   for (const c of constraints) {
     if (c.type === "orderBy") {
-      // Auto-konversi field name ke snake_case saat query
       query = query.order(toSnakeCase(c.field), { ascending: c.direction === "asc" });
+      continue;
     }
-    if (c.type === "where") {
-      query = query.eq(toSnakeCase(c.field), c.value);
+
+    const field = toSnakeCase(c.field);
+    switch (c.op) {
+      case "neq":
+      case "!=":
+        query = query.neq(field, c.value);
+        break;
+      case "gt":
+        query = query.gt(field, c.value);
+        break;
+      case "gte":
+        query = query.gte(field, c.value);
+        break;
+      case "lt":
+        query = query.lt(field, c.value);
+        break;
+      case "lte":
+        query = query.lte(field, c.value);
+        break;
+      case "in":
+        query = query.in(field, c.value as any[]);
+        break;
+      case "contains":
+        query = query.contains(field, c.value as any);
+        break;
+      case "eq":
+      default:
+        query = query.eq(field, c.value);
+        break;
     }
   }
 
@@ -85,30 +88,38 @@ export async function getDocuments<T = any>(
 
   const { data, error } = await query;
   if (error) throw error;
-  // Konversi hasil dari snake_case ke camelCase agar komponen UI tetap bisa pakai camelCase
-  return objectToCamel(data) as any[];
+  return objectToCamel(data) as T[];
 }
 
-export async function getDocument<T = any>(collectionName: string, id: string): Promise<any | null> {
+export async function getDocument<T = any>(
+  collectionName: string,
+  id: string
+): Promise<T | null> {
   const { data, error } = await supabase.from(collectionName).select("*").eq("id", id).single();
   if (error) {
     if (error.code === "PGRST116") return null;
     throw error;
   }
-  return objectToCamel(data);
+  return objectToCamel(data) as T;
 }
 
-export async function createDocument(collectionName: string, data: any): Promise<string> {
-  // Konversi data dari camelCase ke snake_case sebelum dikirim ke Supabase
-  const snakeData = objectToSnake(data);
-  const { data: result, error } = await supabase.from(collectionName).insert(snakeData).select().single();
+export async function createDocument(collectionName: string, data: unknown): Promise<string> {
+  const snakeData = objectToSnake(data) as Record<string, unknown>;
+  const { data: result, error } = await supabase
+    .from(collectionName)
+    .insert(snakeData)
+    .select()
+    .single();
   if (error) throw error;
   return result.id;
 }
 
-export async function updateDocument(collectionName: string, id: string, data: any): Promise<void> {
-  // Konversi data dari camelCase ke snake_case sebelum dikirim ke Supabase
-  const snakeData = objectToSnake(data);
+export async function updateDocument(
+  collectionName: string,
+  id: string,
+  data: unknown
+): Promise<void> {
+  const snakeData = objectToSnake(data) as Record<string, unknown>;
   const { error } = await supabase.from(collectionName).update(snakeData).eq("id", id);
   if (error) throw error;
 }
@@ -119,11 +130,15 @@ export async function deleteDocument(collectionName: string, id: string): Promis
 }
 
 export async function countDocuments(collectionName: string): Promise<number> {
-  const { count, error } = await supabase.from(collectionName).select('*', { count: 'exact', head: true });
+  const { count, error } = await supabase
+    .from(collectionName)
+    .select("*", { count: "exact", head: true });
   if (error) throw error;
   return count || 0;
 }
 
-// Helper builders — field name di sini akan di-konversi otomatis di getDocuments()
-export const orderBy = (field: string, direction: "asc" | "desc" = "asc") => ({ type: "orderBy", field, direction });
-export const where = (field: string, op: string, value: any) => ({ type: "where", field, value });
+export const orderBy = (field: string, direction: "asc" | "desc" = "asc") =>
+  ({ type: "orderBy", field, direction }) as const;
+
+export const where = (field: string, op: string, value: unknown) =>
+  ({ type: "where", field, op, value }) as const;

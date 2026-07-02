@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 
 interface UserData {
@@ -16,7 +17,7 @@ interface UserData {
 }
 
 interface AuthContextType {
-  user: any | null;
+  user: User | null;
   userData: UserData | null;
   loading: boolean;
   isAdmin: boolean;
@@ -26,38 +27,74 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+const ADMIN_ROLES = new Set(["admin", "pic"]);
+
+function isNetworkAuthError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /failed to fetch|network|fetch/i.test(message);
+}
+
+function getFriendlyAuthMessage(error: unknown) {
+  if (isNetworkAuthError(error)) {
+    return "Koneksi ke server autentikasi bermasalah. Pastikan konfigurasi Supabase di Vercel sudah benar, lalu coba lagi.";
+  }
+
+  return error instanceof Error ? error.message : "Login gagal. Silakan coba lagi.";
+}
+
+async function safeSignOut() {
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.warn("Failed to clear auth session:", error);
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ambil session saat ini
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleUserSession(session?.user);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        void handleUserSession(session?.user);
+      })
+      .catch((error) => {
+        console.error("Failed to get auth session:", error);
+        setUser(null);
+        setUserData(null);
+        setLoading(false);
+      });
 
-    // Dengarkan perubahan auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        handleUserSession(session?.user);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      void handleUserSession(session?.user);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleUserSession = async (supabaseUser: any) => {
+  const handleUserSession = async (supabaseUser?: User | null) => {
     setUser(supabaseUser || null);
-    if (supabaseUser) {
-      // Fetch data dari tabel users
+
+    if (!supabaseUser) {
+      setUserData(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("id", supabaseUser.id)
-        .single();
-        
+        .maybeSingle();
+
+      if (error) throw error;
+
       if (data) {
         setUserData({
           uid: data.id,
@@ -65,38 +102,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           managedMenus: data.managed_menus || [],
         } as UserData);
       } else {
-        // Jika tidak ada di tabel users, mungkin dia baru sign up. 
-        // Idealnya ada trigger Supabase, tapi kita set default saja.
         setUserData({
           uid: supabaseUser.id,
-          email: supabaseUser.email,
-          name: supabaseUser.email.split("@")[0],
+          email: supabaseUser.email || "",
+          name: supabaseUser.email?.split("@")[0] || "User",
           role: "user",
         });
       }
-    } else {
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
       setUserData(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw new Error(error.message);
-    if (data.user) {
-      const { data: userDoc } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", data.user.id)
-        .single();
-      
-      if (userDoc && userDoc.role !== "admin" && userDoc.role !== "pic") {
-        await supabase.auth.signOut();
-        throw new Error("Akses ditolak. Hanya admin atau PIC yang dapat masuk.");
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw new Error(error.message);
+
+      if (data.user) {
+        const { data: userDoc, error: userError } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        if (userError) throw userError;
+
+        if (!userDoc || !ADMIN_ROLES.has(userDoc.role)) {
+          await safeSignOut();
+          throw new Error("Akses ditolak. Hanya admin atau PIC yang dapat masuk.");
+        }
       }
+    } catch (error) {
+      if (isNetworkAuthError(error)) {
+        await safeSignOut();
+      }
+
+      throw new Error(getFriendlyAuthMessage(error));
     }
   };
 
@@ -129,25 +174,6 @@ export function useAuth() {
   return ctx;
 }
 
-// ── Helper: Create admin account (run once) ──
-export async function createAdminAccount(email: string, password: string, name: string = "Admin Santri") {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
-  if (error) throw new Error(error.message);
-  
-  if (data.user) {
-    await supabase.from("users").insert({
-      id: data.user.id,
-      email: data.user.email,
-      name: name,
-      role: "admin"
-    });
-  }
-}
-
-// ── Helper: Register Regular User ──
 export async function signUpUser(data: {
   name: string;
   username: string;
@@ -159,21 +185,27 @@ export async function signUpUser(data: {
   const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
+    options: {
+      data: {
+        name: data.name,
+        username: data.username,
+        phone_number: data.phoneNumber,
+        pesantren: data.pesantren,
+      },
+    },
   });
+
   if (error) throw new Error(error.message);
-  
+
   if (authData.user) {
-    // Insert with snake_case because we are using raw supabase client here
-    // But wait, the client automatically handles it if we use createDocument. 
-    // Here we use raw insert, so we map to snake_case.
-    await supabase.from("users").insert({
+    await supabase.from("users").upsert({
       id: authData.user.id,
       email: authData.user.email,
       name: data.name,
       role: "user",
       username: data.username,
       phone_number: data.phoneNumber,
-      pesantren: data.pesantren
+      pesantren: data.pesantren,
     });
   }
 }

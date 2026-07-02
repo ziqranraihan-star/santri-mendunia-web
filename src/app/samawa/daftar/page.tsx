@@ -48,7 +48,7 @@ export default function DaftarSamawaPage() {
 
     const fileName = `samawa/${Date.now()}_${type}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
     const { error } = await supabase.storage
-      .from('public')
+      .from('private')
       .upload(fileName, file, { upsert: false });
 
     if (error) {
@@ -58,13 +58,11 @@ export default function DaftarSamawaPage() {
       return;
     }
 
-    const { data: publicUrlData } = supabase.storage.from('public').getPublicUrl(fileName);
-    
     if (type === "ktp") {
-      setForm(p => ({ ...p, ktpUrl: publicUrlData.publicUrl }));
+      setForm(p => ({ ...p, ktpUrl: fileName }));
       setUploadingKtp(false);
     } else {
-      setForm(p => ({ ...p, recommendationUrl: publicUrlData.publicUrl }));
+      setForm(p => ({ ...p, recommendationUrl: fileName }));
       setUploadingRec(false);
     }
   };

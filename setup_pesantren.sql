@@ -1,6 +1,6 @@
--- SQL Script untuk membuat tabel pesantren
--- Silakan jalankan script SQL ini di Supabase SQL Editor Anda
--- Buka dashboard Supabase -> SQL Editor -> New Query -> Paste dan Run.
+-- Deprecated standalone setup.
+-- Use ../../supabase_schema.sql followed by ../../secure_supabase.sql instead.
+-- This file remains as a safe compatibility wrapper for older deployment notes.
 
 CREATE TABLE IF NOT EXISTS public.pesantren (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -10,31 +10,27 @@ CREATE TABLE IF NOT EXISTS public.pesantren (
   location TEXT,
   image_url TEXT,
   website_url TEXT,
-  is_active BOOLEAN DEFAULT true,
-  is_featured BOOLEAN DEFAULT false,
-  view_count INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  is_featured BOOLEAN NOT NULL DEFAULT false,
+  view_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Mengaktifkan RLS
 ALTER TABLE public.pesantren ENABLE ROW LEVEL SECURITY;
 
--- Kebijakan baca: siapa saja bisa membaca
-CREATE POLICY "Public profiles are viewable by everyone for pesantren."
-ON public.pesantren FOR SELECT
-USING (true);
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone for pesantren." ON public.pesantren;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only for pesantren" ON public.pesantren;
+DROP POLICY IF EXISTS "Enable update for authenticated users only for pesantren" ON public.pesantren;
+DROP POLICY IF EXISTS "Enable delete for authenticated users only for pesantren" ON public.pesantren;
 
--- Kebijakan tulis: hanya admin dan PIC yang bisa mengubah (sementara kita buat anon bisa untuk memudahkan atau sesuaikan dengan RBAC)
--- Note: karena ini pakai anon key di web untuk insert (berdasarkan setup lama), kita izinkan insert/update sementara
-CREATE POLICY "Enable insert for authenticated users only for pesantren"
-ON public.pesantren FOR INSERT
-WITH CHECK (true);
+DROP POLICY IF EXISTS content_public_read_pesantren ON public.pesantren;
+DROP POLICY IF EXISTS content_manage_pesantren ON public.pesantren;
 
-CREATE POLICY "Enable update for authenticated users only for pesantren"
-ON public.pesantren FOR UPDATE
-USING (true);
+CREATE POLICY content_public_read_pesantren ON public.pesantren
+  FOR SELECT USING (is_active = true);
 
-CREATE POLICY "Enable delete for authenticated users only for pesantren"
-ON public.pesantren FOR DELETE
-USING (true);
+CREATE POLICY content_manage_pesantren ON public.pesantren
+  FOR ALL TO authenticated
+  USING (public.can_manage('/admin/pesantren'))
+  WITH CHECK (public.can_manage('/admin/pesantren'));

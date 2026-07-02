@@ -1,7 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient("https://qksagkeydvcewlujfyqs.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrc2Fna2V5ZHZjZXdsdWpmeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE3MjcsImV4cCI6MjA5NDcwNzcyN30.ETjdbiQFBSv3uiZvB5ymSQ_ltp9qpjBqoWOYnTsQySQ");
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY before running this script.'
+  );
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 async function run() {
   const { data, error } = await supabase.from('pesantren').select('*').limit(1);
+  console.log('Pesantren sample:', data);
   console.log('Pesantren table error:', error?.message);
 }
+
 run();

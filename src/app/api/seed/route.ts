@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
-import { createDocument, COLLECTIONS } from "@/lib/supabase/client";
+import { NextRequest, NextResponse } from "next/server";
+import { objectToSnake } from "@/lib/casing";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 
 const coursesData = [
@@ -241,14 +242,39 @@ const testsData = [
   }
 ];
 
+const COLLECTIONS = {
+  courses: "courses",
+  tests: "tests",
+} as const;
+
+async function insertSeedDocument(collectionName: string, data: unknown): Promise<void> {
+  const supabase = createSupabaseAdminClient();
+  const payload = objectToSnake(data) as Record<string, unknown>;
+  const { error } = await supabase.from(collectionName).insert(payload);
+  if (error) throw error;
+}
+
 export async function GET() {
+  return NextResponse.json(
+    { success: false, error: "Seed endpoint requires authenticated POST." },
+    { status: 405 }
+  );
+}
+
+export async function POST(request: NextRequest) {
+  const configuredSecret = process.env.SEED_ADMIN_SECRET;
+  const providedSecret = request.headers.get("x-seed-secret");
+
+  if (!configuredSecret || providedSecret !== configuredSecret) {
+    return NextResponse.json({ success: false, error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
     let coursesAdded = 0;
     let testsAdded = 0;
 
-    // Seed Courses
     for (const item of coursesData) {
-      await createDocument(COLLECTIONS.courses, {
+      await insertSeedDocument(COLLECTIONS.courses, {
         ...item,
         mentor_id: "",
         total_lessons: 0,
@@ -261,9 +287,8 @@ export async function GET() {
       coursesAdded++;
     }
 
-    // Seed Tests (Pusat Pelatihan)
     for (const item of testsData) {
-      await createDocument(COLLECTIONS.tests, {
+      await insertSeedDocument(COLLECTIONS.tests, {
         ...item,
         created_at: new Date().toISOString(),
       });
