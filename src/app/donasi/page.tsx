@@ -2,12 +2,11 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/portal/navbar";
 import Footer from "@/components/portal/footer";
-import { getDocuments, COLLECTIONS, orderBy, where } from "@/lib/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import { getDocuments, COLLECTIONS, orderBy } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 
-interface DonationItem { id: string; title: string; description: string; category: string; targetAmount: number; collectedAmount: number; imageUrl: string; isActive: boolean; }
+interface DonationItem { id: string; title: string; description: string; targetAmount: number; collectedAmount: number; imageUrl: string; isActive: boolean; }
 
 export default function DonasiPublicPage() {
   const [data, setData] = useState<DonationItem[]>([]); const [loading, setLoading] = useState(true);
@@ -24,7 +23,6 @@ export default function DonasiPublicPage() {
             <div key={d.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
               {d.imageUrl && <div className="h-40 bg-muted"><img src={d.imageUrl} alt={d.title} className="w-full h-full object-cover" /></div>}
               <div className="p-5">
-                <Badge variant="secondary" className="capitalize text-xs mb-2">{d.category}</Badge>
                 <h3 className="text-lg font-semibold mb-2">{d.title}</h3>
                 {d.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{d.description}</p>}
                 <div className="mb-3"><div className="flex justify-between text-xs mb-1"><span className="font-medium text-teal">Rp {d.collectedAmount?.toLocaleString()}</span><span className="text-muted-foreground">dari Rp {d.targetAmount?.toLocaleString()}</span></div>
