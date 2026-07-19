@@ -37,7 +37,7 @@ export default function TentangPage() {
               <ul className="text-muted-foreground space-y-2 text-sm leading-relaxed">
                 <li>• Menyediakan akses informasi beasiswa dalam dan luar negeri</li>
                 <li>• Mengembangkan soft-skill dan hard-skill santri melalui kursus online</li>
-                <li>• Memberdayakan ekonomi pesantren melalui INKOPONTREN</li>
+                <li>• Memberdayakan ekonomi pesantren melalui Santri Go Ekspor</li>
                 <li>• Mewadahi berita dan inspirasi dari dunia santri</li>
               </ul>
             </div>

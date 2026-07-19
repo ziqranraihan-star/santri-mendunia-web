@@ -27,7 +27,8 @@ SEED_ADMIN_SECRET=
 Run the latest baseline and hardening SQL before smoke testing:
 
 1. `../supabase_schema.sql` from the workspace root.
-2. `../secure_supabase.sql` from the workspace root.
+2. `../client_requested_fixes.sql` from the workspace root (required for existing databases because `CREATE TABLE IF NOT EXISTS` does not add missing columns).
+3. `../secure_supabase.sql` from the workspace root.
 
 Then verify active news rows exist:
 
@@ -47,4 +48,7 @@ After redeploying Vercel:
 2. Login with `admin@santrimendunia.com` and confirm redirect to `/admin/dashboard`.
 3. Visit `/berita`; it should show articles, an empty state, or a retryable error state, never endless skeleton cards.
 4. Create a test article in `/admin/berita` and confirm it appears on `/berita`.
-5. Check `curl -I https://www.santrimendunia.org/berita`; `Age` should be low right after redeploy.
+5. Create a test scholarship with a valid registration URL and confirm it can be saved and displayed.
+6. Open that article from the mobile app and confirm the full detail screen appears.
+7. Open a pesantren website link and confirm it launches the external browser.
+8. Check `curl -I https://www.santrimendunia.org/berita`; `Age` should be low right after redeploy.

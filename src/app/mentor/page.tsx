@@ -6,6 +6,7 @@ import Footer from "@/components/portal/footer";
 import { getDocuments, COLLECTIONS, orderBy } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { normalizeExternalUrl } from "@/lib/external-url";
 import { Building2, Compass, ExternalLink, MapPin } from "lucide-react";
 
 interface MentorItem {
@@ -114,8 +115,8 @@ export default function MentorPublicPage() {
                           </p>
                         )}
                         {item.description && <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{item.description}</p>}
-                        {item.websiteUrl && (
-                          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer">
+                        {normalizeExternalUrl(item.websiteUrl || "") && (
+                          <a href={normalizeExternalUrl(item.websiteUrl || "")} target="_blank" rel="noopener noreferrer">
                             <Button variant="outline" className="w-full gap-2">
                               Kunjungi Website <ExternalLink className="w-3 h-3" />
                             </Button>

@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Image as ImageIcon, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
+import { isValidExternalUrl, normalizeExternalUrl } from "@/lib/external-url";
+import { getMutationErrorMessage } from "@/lib/supabase-error";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
@@ -23,6 +25,7 @@ export default function BuatBeasiswaPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({ title: "", description: "", provider: "", category: "dalam_negeri", level: "s1", region: "", country: "", registrationUrl: "", deadline: "", imageUrl: "", benefits: "", requirements: "", documents: "", tips: "" });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -58,6 +61,13 @@ export default function BuatBeasiswaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
+
+    if (!isValidExternalUrl(form.registrationUrl)) {
+      setSubmitError("URL Pendaftaran tidak valid. Isi dengan tautan seperti https://contoh.com/daftar atau kosongkan kolom ini.");
+      return;
+    }
+
     setLoading(true);
     try {
       await createDocument(COLLECTIONS.scholarships, {
@@ -68,10 +78,10 @@ export default function BuatBeasiswaPage() {
         level: form.level,
         region: form.region,
         country: form.country,
-        registrationUrl: form.registrationUrl,
+        registrationUrl: normalizeExternalUrl(form.registrationUrl) || null,
         imageUrl: form.imageUrl,
         tips: form.tips,
-        deadline: new Date(form.deadline),
+        deadline: `${form.deadline}T23:59:59.000Z`,
         benefits: form.benefits.split("\n").map((item) => item.trim()).filter(Boolean),
         requirements: form.requirements.split("\n").map((item) => item.trim()).filter(Boolean),
         documents: form.documents.split("\n").map((item) => item.trim()).filter(Boolean),
@@ -82,7 +92,7 @@ export default function BuatBeasiswaPage() {
       router.push("/admin/beasiswa");
     } catch (error) {
       console.error(error);
-      alert("Gagal menyimpan");
+      setSubmitError(getMutationErrorMessage(error, "beasiswa"));
     } finally {
       setLoading(false);
     }
@@ -108,7 +118,7 @@ export default function BuatBeasiswaPage() {
             <div className="space-y-2"><Label>Negara</Label><Input value={form.country} onChange={(e) => set("country", e.target.value)} /></div>
             <div className="space-y-2"><Label>Region</Label><Input value={form.region} onChange={(e) => set("region", e.target.value)} /></div>
           </div>
-          <div className="space-y-2"><Label>URL Pendaftaran</Label><Input value={form.registrationUrl} onChange={(e) => set("registrationUrl", e.target.value)} /></div>
+          <div className="space-y-2"><Label>URL Pendaftaran</Label><Input type="url" inputMode="url" placeholder="https://contoh.com/daftar" value={form.registrationUrl} onChange={(e) => set("registrationUrl", e.target.value)} /><p className="text-xs text-muted-foreground">Masukkan tautan pendaftaran, bukan caption atau deskripsi promosi.</p></div>
           <div className="space-y-2">
             <Label>Pamflet/Gambar Beasiswa</Label>
             <input
@@ -155,7 +165,8 @@ export default function BuatBeasiswaPage() {
           <div className="space-y-2"><Label>Dokumen</Label><Textarea rows={3} value={form.documents} onChange={(e) => set("documents", e.target.value)} /></div>
           <div className="space-y-2"><Label>Tips</Label><Textarea rows={2} value={form.tips} onChange={(e) => set("tips", e.target.value)} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Link href="/admin/beasiswa"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
+        {submitError && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{submitError}</div>}
+        <div className="flex justify-end gap-3"><Link href="/admin/beasiswa"><Button type="button" variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>
   );

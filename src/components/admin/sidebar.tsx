@@ -42,7 +42,7 @@ const menuItems = [
   { type: "separator" as const, label: "Layanan" },
   { label: "Job & Magang", href: "/admin/lowongan", icon: Briefcase },
   { label: "Tour & Travel", href: "/admin/trip", icon: Plane },
-  { label: "INKOPONTREN", href: "/admin/produk", icon: ShoppingBag },
+  { label: "Santri Go Ekspor", href: "/admin/produk", icon: ShoppingBag },
   { label: "Donasi", href: "/admin/donasi", icon: HeartHandshake },
   { label: "Samawa Space", href: "/admin/samawa", icon: ShieldAlert },
   { type: "separator" as const, label: "Sistem" },

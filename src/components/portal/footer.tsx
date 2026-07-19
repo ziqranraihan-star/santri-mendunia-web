@@ -18,7 +18,7 @@ const links = [
   { title: "Layanan", items: [
     { label: "Donasi", href: "/donasi" },
     { label: "Tour & Travel", href: "#" },
-    { label: "INKOPONTREN", href: "#" },
+    { label: "Santri Go Ekspor", href: "/produk" },
     { label: "Job & Magang", href: "#" },
   ]},
   { title: "Informasi", items: [

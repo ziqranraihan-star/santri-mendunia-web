@@ -18,7 +18,7 @@ const AVAILABLE_MENUS = [
   { id: "/admin/pesantren", label: "Info Pesantren" },
   { id: "/admin/lowongan", label: "Job & Magang" },
   { id: "/admin/trip", label: "Tour & Travel" },
-  { id: "/admin/produk", label: "INKOPONTREN" },
+  { id: "/admin/produk", label: "Santri Go Ekspor" },
   { id: "/admin/donasi", label: "Donasi" },
   { id: "/admin/samawa", label: "Samawa Space" },
 ];

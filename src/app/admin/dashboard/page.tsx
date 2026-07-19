@@ -100,7 +100,7 @@ export default function DashboardPage() {
           {[
             { label: "Tulis Berita Baru", desc: "Buat artikel untuk Santri News", href: "/admin/berita/buat", icon: FileText, color: "bg-cat-news" },
             { label: "Tambah Beasiswa", desc: "Daftarkan info beasiswa terbaru", href: "/admin/beasiswa/buat", icon: GraduationCap, color: "bg-teal" },
-            { label: "Upload Produk", desc: "Tambah produk INKOPONTREN", href: "/admin/produk/buat", icon: ShoppingBag, color: "bg-cat-ecommerce" },
+            { label: "Upload Produk", desc: "Tambah produk Santri Go Ekspor", href: "/admin/produk/buat", icon: ShoppingBag, color: "bg-cat-ecommerce" },
           ].map((action) => {
             const Icon = action.icon;
             return (

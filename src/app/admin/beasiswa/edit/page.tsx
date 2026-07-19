@@ -11,15 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Image as ImageIcon, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
+import { isValidExternalUrl, normalizeExternalUrl } from "@/lib/external-url";
+import { getMutationErrorMessage } from "@/lib/supabase-error";
+import { stringListToText } from "@/lib/string-list";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9.]/g, "_");
-}
-
-function listToText(value: unknown) {
-  return Array.isArray(value) ? value.join("\n") : "";
 }
 
 function EditBeasiswaContent() {
@@ -30,6 +29,7 @@ function EditBeasiswaContent() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({ title: "", description: "", provider: "", category: "dalam_negeri", level: "s1", region: "", country: "", registrationUrl: "", deadline: "", imageUrl: "", benefits: "", requirements: "", documents: "", tips: "", isActive: true });
   const set = (k: string, v: string | boolean) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -58,9 +58,9 @@ function EditBeasiswaContent() {
           registrationUrl: data.registrationUrl || "",
           deadline,
           imageUrl: data.imageUrl || "",
-          benefits: listToText(data.benefits),
-          requirements: listToText(data.requirements),
-          documents: listToText(data.documents),
+          benefits: stringListToText(data.benefits),
+          requirements: stringListToText(data.requirements),
+          documents: stringListToText(data.documents),
           tips: data.tips || "",
           isActive: data.isActive !== false,
         });
@@ -106,6 +106,12 @@ function EditBeasiswaContent() {
     e.preventDefault();
     if (!id) return;
 
+    setSubmitError("");
+    if (!isValidExternalUrl(form.registrationUrl)) {
+      setSubmitError("URL Pendaftaran tidak valid. Isi dengan tautan seperti https://contoh.com/daftar atau kosongkan kolom ini.");
+      return;
+    }
+
     setLoading(true);
     try {
       await updateDocument(COLLECTIONS.scholarships, id, {
@@ -116,10 +122,10 @@ function EditBeasiswaContent() {
         level: form.level,
         region: form.region,
         country: form.country,
-        registrationUrl: form.registrationUrl,
+        registrationUrl: normalizeExternalUrl(form.registrationUrl) || null,
         imageUrl: form.imageUrl,
         tips: form.tips,
-        deadline: new Date(form.deadline),
+        deadline: `${form.deadline}T23:59:59.000Z`,
         benefits: form.benefits.split("\n").map((item) => item.trim()).filter(Boolean),
         requirements: form.requirements.split("\n").map((item) => item.trim()).filter(Boolean),
         documents: form.documents.split("\n").map((item) => item.trim()).filter(Boolean),
@@ -128,7 +134,7 @@ function EditBeasiswaContent() {
       router.push("/admin/beasiswa");
     } catch (error) {
       console.error(error);
-      alert("Gagal menyimpan");
+      setSubmitError(getMutationErrorMessage(error, "beasiswa"));
     } finally {
       setLoading(false);
     }
@@ -158,7 +164,7 @@ function EditBeasiswaContent() {
             <div className="space-y-2"><Label>Negara</Label><Input value={form.country} onChange={(e) => set("country", e.target.value)} /></div>
             <div className="space-y-2"><Label>Region</Label><Input value={form.region} onChange={(e) => set("region", e.target.value)} /></div>
           </div>
-          <div className="space-y-2"><Label>URL Pendaftaran</Label><Input value={form.registrationUrl} onChange={(e) => set("registrationUrl", e.target.value)} /></div>
+          <div className="space-y-2"><Label>URL Pendaftaran</Label><Input type="url" inputMode="url" placeholder="https://contoh.com/daftar" value={form.registrationUrl} onChange={(e) => set("registrationUrl", e.target.value)} /><p className="text-xs text-muted-foreground">Masukkan tautan pendaftaran, bukan caption atau deskripsi promosi.</p></div>
           <div className="space-y-2">
             <Label>Pamflet/Gambar Beasiswa</Label>
             <input
@@ -209,7 +215,8 @@ function EditBeasiswaContent() {
           <div className="space-y-2"><Label>Dokumen</Label><Textarea rows={3} value={form.documents} onChange={(e) => set("documents", e.target.value)} /></div>
           <div className="space-y-2"><Label>Tips</Label><Textarea rows={2} value={form.tips} onChange={(e) => set("tips", e.target.value)} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Link href="/admin/beasiswa"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
+        {submitError && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{submitError}</div>}
+        <div className="flex justify-end gap-3"><Link href="/admin/beasiswa"><Button type="button" variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>
   );

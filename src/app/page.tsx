@@ -116,7 +116,7 @@ export default function HomePage() {
               { label: "Info Pesantren", href: "/mentor", icon: Compass, color: "text-[#10B981]", bg: "bg-[#10B981]/10" },
               { label: "Job & Magang", href: "/lowongan", icon: Briefcase, color: "text-[#8B5CF6]", bg: "bg-[#8B5CF6]/10" },
               { label: "Tour & Travel", href: "/trip", icon: Plane, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-              { label: "INKOPONTREN", href: "/produk", icon: ShoppingBag, color: "text-[#F97316]", bg: "bg-[#F97316]/10" },
+              { label: "Santri Go Ekspor", href: "/produk", icon: ShoppingBag, color: "text-[#F97316]", bg: "bg-[#F97316]/10" },
               { label: "Donasi", href: "/donasi", icon: Heart, color: "text-[#EF4444]", bg: "bg-[#EF4444]/10" },
             ].map((cat) => {
               const Icon = cat.icon;

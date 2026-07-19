@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Image as ImageIcon, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
+import { isValidExternalUrl, normalizeExternalUrl } from "@/lib/external-url";
+import { getMutationErrorMessage } from "@/lib/supabase-error";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
@@ -22,6 +24,7 @@ export default function BuatPesantrenPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({ name: "", description: "", category: "modern", location: "", websiteUrl: "", imageUrl: "" });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -57,6 +60,11 @@ export default function BuatPesantrenPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
+    if (!isValidExternalUrl(form.websiteUrl)) {
+      setSubmitError("URL Website/Media Sosial tidak valid. Gunakan alamat seperti https://instagram.com/namaakun.");
+      return;
+    }
     setLoading(true);
     try {
       await createDocument(COLLECTIONS.pesantren, {
@@ -64,7 +72,7 @@ export default function BuatPesantrenPage() {
         description: form.description,
         category: form.category,
         location: form.location,
-        websiteUrl: form.websiteUrl,
+        websiteUrl: normalizeExternalUrl(form.websiteUrl) || null,
         imageUrl: form.imageUrl,
         isFeatured: false,
         isActive: true,
@@ -73,7 +81,7 @@ export default function BuatPesantrenPage() {
       router.push("/admin/pesantren");
     } catch (error) {
       console.error(error);
-      alert("Gagal menyimpan data pesantren");
+      setSubmitError(getMutationErrorMessage(error, "data pesantren"));
     } finally {
       setLoading(false);
     }
@@ -90,7 +98,7 @@ export default function BuatPesantrenPage() {
             <div className="space-y-2"><Label>Lokasi (Kota/Kabupaten)</Label><Input value={form.location} onChange={(e) => set("location", e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Deskripsi Singkat</Label><Textarea rows={4} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
-          <div className="space-y-2"><Label>URL Website/Media Sosial</Label><Input type="url" value={form.websiteUrl} onChange={(e) => set("websiteUrl", e.target.value)} /></div>
+          <div className="space-y-2"><Label>URL Website/Media Sosial</Label><Input type="url" inputMode="url" placeholder="https://instagram.com/namaakun" value={form.websiteUrl} onChange={(e) => set("websiteUrl", e.target.value)} /></div>
           <div className="space-y-2">
             <Label>Gambar Utama Pesantren</Label>
             <input
@@ -131,7 +139,8 @@ export default function BuatPesantrenPage() {
             )}
           </div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Link href="/admin/pesantren"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
+        {submitError && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{submitError}</div>}
+        <div className="flex justify-end gap-3"><Link href="/admin/pesantren"><Button type="button" variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading || uploading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>
   );

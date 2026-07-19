@@ -7,6 +7,8 @@ import { getDocuments, COLLECTIONS, orderBy } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, ExternalLink, GraduationCap } from "lucide-react";
+import { normalizeExternalUrl } from "@/lib/external-url";
+import { normalizeStringList } from "@/lib/string-list";
 
 interface ScholarshipItem {
   id: string;
@@ -20,7 +22,7 @@ interface ScholarshipItem {
   deadline: string;
   registrationUrl: string;
   imageUrl: string;
-  benefits: string[];
+  benefits: string[] | string | null;
   isActive: boolean;
 }
 
@@ -90,6 +92,8 @@ export default function BeasiswaPublicPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filtered.map((s) => {
               const deadline = s.deadline;
+              const benefits = normalizeStringList(s.benefits);
+              const registrationUrl = normalizeExternalUrl(s.registrationUrl || "");
               return (
                 <div key={s.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow relative">
                   {s.imageUrl && (
@@ -105,11 +109,11 @@ export default function BeasiswaPublicPage() {
                     <h3 className="text-lg font-semibold mb-1">{s.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{s.provider}{s.country ? ` - ${s.country}` : ""}</p>
                     {s.description && <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{s.description}</p>}
-                    {s.benefits && s.benefits.length > 0 && (
+                    {benefits.length > 0 && (
                       <div className="mb-4">
                         <p className="text-xs font-semibold mb-1">Benefit:</p>
                         <ul className="text-xs text-muted-foreground space-y-0.5">
-                          {s.benefits.slice(0, 3).map((benefit, i) => <li key={i}>- {benefit}</li>)}
+                          {benefits.slice(0, 3).map((benefit, i) => <li key={i}>- {benefit}</li>)}
                         </ul>
                       </div>
                     )}
@@ -119,8 +123,8 @@ export default function BeasiswaPublicPage() {
                           <Calendar className="w-3 h-3" /> Deadline: {new Date(deadline).toLocaleDateString("id-ID")}
                         </span>
                       )}
-                      {s.registrationUrl && (
-                        <a href={s.registrationUrl} target="_blank" rel="noopener noreferrer">
+                      {registrationUrl && (
+                        <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
                           <Button size="sm" className="bg-teal hover:bg-teal-dark gap-1 text-xs">
                             <ExternalLink className="w-3 h-3" /> Daftar
                           </Button>

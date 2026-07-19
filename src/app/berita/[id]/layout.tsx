@@ -7,13 +7,22 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  
+
   let item: any = null;
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-    item = await getDocument(COLLECTIONS.news, id);
-  } else {
-    const items = await getDocuments(COLLECTIONS.news, [where("slug", "eq", id)]);
-    item = items[0] || null;
+  try {
+    const routeId = decodeURIComponent(id);
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(routeId)) {
+      item = await getDocument(COLLECTIONS.news, routeId);
+    } else {
+      const items = await getDocuments(COLLECTIONS.news, [where("slug", "eq", routeId)]);
+      item = items[0] || null;
+    }
+  } catch (error) {
+    console.error("Failed to generate news metadata:", error);
+    return {
+      title: "Santri News",
+      description: "Baca berita terkini di Santri Mendunia.",
+    };
   }
 
   if (!item) {

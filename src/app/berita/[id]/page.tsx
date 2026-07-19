@@ -5,9 +5,10 @@ import Footer from "@/components/portal/footer";
 import { getDocument, updateDocument, COLLECTIONS } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share2, Eye, Calendar } from "lucide-react";
+import { AlertCircle, ArrowLeft, Share2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { normalizeExternalUrl } from "@/lib/external-url";
 
 interface NewsDetail { id: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
 
@@ -16,27 +17,37 @@ export default function BeritaDetailPage() {
   const id = params?.id as string;
   const [news, setNews] = useState<NewsDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!id) return;
-    (async () => {
-      let item = null;
-      // Cek apakah id adalah UUID (format lama) atau slug (format baru)
-      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-        item = await getDocument<NewsDetail>(COLLECTIONS.news, id);
-      } else {
-        const { getDocuments, where } = await import("@/lib/supabase/client");
-        const items = await getDocuments<NewsDetail>(COLLECTIONS.news, [
-          where("slug", "eq", id)
-        ]);
-        item = items[0] || null;
-      }
-      
-      setNews(item);
+    if (!id) {
       setLoading(false);
-      // Increment view count
-      if (item) {
-        try { await updateDocument(COLLECTIONS.news, item.id, { viewCount: (item.viewCount || 0) + 1 }); } catch {}
+      return;
+    }
+    (async () => {
+      try {
+        let item = null;
+        const routeId = decodeURIComponent(id);
+        // Cek apakah id adalah UUID (format lama) atau slug (format baru)
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(routeId)) {
+          item = await getDocument<NewsDetail>(COLLECTIONS.news, routeId);
+        } else {
+          const { getDocuments, where } = await import("@/lib/supabase/client");
+          const items = await getDocuments<NewsDetail>(COLLECTIONS.news, [
+            where("slug", "eq", routeId)
+          ]);
+          item = items[0] || null;
+        }
+
+        setNews(item);
+        if (item) {
+          try { await updateDocument(COLLECTIONS.news, item.id, { viewCount: (item.viewCount || 0) + 1 }); } catch {}
+        }
+      } catch (loadError) {
+        console.error("Failed to load news detail:", loadError);
+        setError("Berita belum bisa dibuka karena koneksi ke server data bermasalah. Silakan coba lagi.");
+      } finally {
+        setLoading(false);
       }
     })();
   }, [id]);
@@ -45,8 +56,8 @@ export default function BeritaDetailPage() {
     <><Navbar /><div className="max-w-3xl mx-auto px-4 py-20"><div className="space-y-4"><div className="h-8 bg-muted rounded animate-pulse w-3/4" /><div className="h-64 bg-muted rounded-xl animate-pulse" /><div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-4 bg-muted rounded animate-pulse" />)}</div></div></div><Footer /></>
   );
 
-  if (!news) return (
-    <><Navbar /><div className="max-w-3xl mx-auto px-4 py-20 text-center"><h1 className="text-2xl font-bold mb-4">Berita tidak ditemukan</h1><Link href="/berita"><Button variant="outline">Kembali ke Berita</Button></Link></div><Footer /></>
+  if (error || !news) return (
+    <><Navbar /><div className="max-w-3xl mx-auto px-4 py-20 text-center">{error && <AlertCircle className="w-9 h-9 text-destructive mx-auto mb-3" />}<h1 className="text-2xl font-bold mb-4">{error || "Berita tidak ditemukan"}</h1><Link href="/berita"><Button variant="outline">Kembali ke Berita</Button></Link></div><Footer /></>
   );
 
   const publishDate = news.publishedAt ? new Date(news.publishedAt) : null;
@@ -107,7 +118,7 @@ export default function BeritaDetailPage() {
             <ul className="space-y-3">
               {news.relatedLinks.map((link, i) => (
                 <li key={i}>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-teal hover:text-teal-dark hover:underline font-medium flex items-start gap-2">
+                  <a href={normalizeExternalUrl(link.url)} target="_blank" rel="noopener noreferrer" className="text-teal hover:text-teal-dark hover:underline font-medium flex items-start gap-2">
                     <span className="text-gold mt-1">▪</span> {link.title}
                   </a>
                 </li>

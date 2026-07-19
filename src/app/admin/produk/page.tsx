@@ -17,5 +17,5 @@ export default function ProdukPage() {
   const [data, setData] = useState<ProductItem[]>([]); const [loading, setLoading] = useState(true);
   useEffect(() => { (async () => { const items = await getDocuments<ProductItem>(COLLECTIONS.products, [orderBy("createdAt", "desc")]); setData(items); setLoading(false); })(); }, []);
   const handleDelete = async (id: string) => { if (!confirm("Hapus produk ini?")) return; await deleteDocument(COLLECTIONS.products, id); setData((p) => p.filter((i) => i.id !== id)); };
-  return <DataTable title="INKOPONTREN" description="Kelola produk UMKM pesantren" columns={columns} data={data} loading={loading} createHref="/admin/produk/buat" createLabel="Tambah Produk" editHref={(id) => `/admin/produk/edit?id=${id}`} onDelete={handleDelete} searchField={"name" as keyof ProductItem} />;
+  return <DataTable title="Santri Go Ekspor" description="Kelola produk UMKM pesantren" columns={columns} data={data} loading={loading} createHref="/admin/produk/buat" createLabel="Tambah Produk" editHref={(id) => `/admin/produk/edit?id=${id}`} onDelete={handleDelete} searchField={"name" as keyof ProductItem} />;
 }

@@ -20,7 +20,7 @@ const dropdownLinks = [
   { label: "Info Pesantren", href: "/mentor" },
   { label: "Job & Magang", href: "/lowongan" },
   { label: "Tour & Travel", href: "/trip" },
-  { label: "INKOPONTREN", href: "/produk" },
+  { label: "Santri Go Ekspor", href: "/produk" },
   { label: "Samawa Space", href: "/samawa" },
 ];
 

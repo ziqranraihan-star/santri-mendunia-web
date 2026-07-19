@@ -32,7 +32,7 @@ export default function ProductPublicPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-teal-deep flex items-center gap-3">
-            <ShoppingBag className="w-8 h-8 text-[#F97316]" /> INKOPONTREN
+            <ShoppingBag className="w-8 h-8 text-[#F97316]" /> Santri Go Ekspor
           </h1>
           <p className="text-muted-foreground mt-1">Dukung kemandirian pesantren dengan membeli produk unggulan karya santri</p>
         </div>
