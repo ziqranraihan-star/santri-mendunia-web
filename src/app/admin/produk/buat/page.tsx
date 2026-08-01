@@ -10,17 +10,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { getMutationErrorMessage } from "@/lib/supabase-error";
+import { isValidExternalUrl, normalizeExternalUrl } from "@/lib/external-url";
+import { ProductImageUpload } from "@/components/admin/product-image-upload";
 
 export default function BuatProdukPage() {
   const router = useRouter(); const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", category: "makanan", price: "0", stock: "0", weight: "", pesantrenName: "", imageUrl: "" });
+  const [submitError, setSubmitError] = useState("");
+  const [form, setForm] = useState({ name: "", description: "", category: "makanan", price: "0", stock: "0", weight: "", pesantrenName: "", imageUrl: "", purchaseUrl: "" });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true);
+    e.preventDefault();
+    setSubmitError("");
+    if (!isValidExternalUrl(form.purchaseUrl)) {
+      setSubmitError("URL pembelian/WhatsApp tidak valid. Gunakan tautan seperti https://wa.me/628123456789.");
+      return;
+    }
+    setLoading(true);
     try {
-      await createDocument(COLLECTIONS.products, { name: form.name, description: form.description, category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName, sellerId: "", imageUrl: form.imageUrl, isFeatured: false, isActive: true, soldCount: 0, rating: 0 });
+      await createDocument(COLLECTIONS.products, { name: form.name.trim(), description: form.description.trim(), category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName.trim(), imageUrl: form.imageUrl || null, purchaseUrl: normalizeExternalUrl(form.purchaseUrl) || null, isFeatured: false, isActive: true, soldCount: 0, rating: 0 });
       router.push("/admin/produk");
-    } catch { alert("Gagal"); } finally { setLoading(false); }
+    } catch (error) { setSubmitError(getMutationErrorMessage(error, "produk")); } finally { setLoading(false); }
   };
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -36,8 +46,10 @@ export default function BuatProdukPage() {
             <div className="space-y-2"><Label>Stok</Label><Input type="number" value={form.stock} onChange={(e) => set("stock", e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Berat (gram)</Label><Input type="number" value={form.weight} onChange={(e) => set("weight", e.target.value)} /></div>
-          <div className="space-y-2"><Label>URL Gambar Produk</Label><Input value={form.imageUrl} onChange={(e) => set("imageUrl", e.target.value)} /></div>
+          <ProductImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} onError={setSubmitError} />
+          <div className="space-y-2"><Label>URL Pembelian / WhatsApp</Label><Input type="url" placeholder="https://..." value={form.purchaseUrl} onChange={(e) => set("purchaseUrl", e.target.value)} /></div>
         </CardContent></Card>
+        {submitError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</div>}
         <div className="flex justify-end gap-3"><Link href="/admin/produk"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>

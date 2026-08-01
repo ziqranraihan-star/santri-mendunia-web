@@ -7,11 +7,13 @@ import Footer from "@/components/portal/footer";
 import { getDocuments, COLLECTIONS, orderBy, where } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { getNewsHref } from "@/lib/news-slug";
 
 import {
   ArrowRight, GraduationCap, Newspaper, BookOpen,
   Heart, Sparkles, ChevronRight, Globe, Award,
-  FileText, Compass, Briefcase, Plane, ShoppingBag, Smartphone
+  FileText, Compass, Briefcase, Plane, Smartphone
 } from "lucide-react";
 
 interface NewsItem { id: string; slug?: string; title: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; }
@@ -116,14 +118,14 @@ export default function HomePage() {
               { label: "Info Pesantren", href: "/mentor", icon: Compass, color: "text-[#10B981]", bg: "bg-[#10B981]/10" },
               { label: "Job & Magang", href: "/lowongan", icon: Briefcase, color: "text-[#8B5CF6]", bg: "bg-[#8B5CF6]/10" },
               { label: "Tour & Travel", href: "/trip", icon: Plane, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-              { label: "Santri Go Ekspor", href: "/produk", icon: ShoppingBag, color: "text-[#F97316]", bg: "bg-[#F97316]/10" },
+              { label: "Santri Go Ekspor", href: "/produk", image: "/logo-goexpro.jpeg", color: "text-[#F97316]", bg: "bg-[#F97316]/10" },
               { label: "Donasi", href: "/donasi", icon: Heart, color: "text-[#EF4444]", bg: "bg-[#EF4444]/10" },
             ].map((cat) => {
               const Icon = cat.icon;
               return (
                 <Link key={cat.label} href={cat.href} className="group flex flex-col items-center p-4 rounded-2xl border bg-white hover:shadow-md transition-all hover:-translate-y-1">
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-colors ${cat.bg}`}>
-                    <Icon className={`w-6 h-6 ${cat.color}`} />
+                    {cat.image ? <Image src={cat.image} alt="Logo Santri Go Ekspor" width={44} height={44} className="w-11 h-11 object-contain rounded-full" /> : Icon ? <Icon className={`w-6 h-6 ${cat.color}`} /> : null}
                   </div>
                   <span className="text-sm font-medium text-center text-gray-800 group-hover:text-teal transition-colors">{cat.label}</span>
                 </Link>
@@ -152,7 +154,7 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {news.slice(0, 6).map((item, i) => (
-                <Link key={item.id} href={`/berita/${item.slug || item.id}`} className={`group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
+                <Link key={item.id} href={getNewsHref(item)} className={`group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>
                   <div className={`relative ${i === 0 ? "h-80" : "h-44"} bg-muted`}>
                     {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />}
                     <div className="absolute top-3 left-3">

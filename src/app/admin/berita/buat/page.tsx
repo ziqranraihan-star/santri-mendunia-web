@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from "lucide-react";
+import { createNewsSlug } from "@/lib/news-slug";
 import Link from "next/link";
 
 
@@ -92,9 +93,7 @@ export default function BuatBeritaPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const baseSlug = form.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/(^-|-$)+/g, '');
-      const uniqueSuffix = Math.random().toString(36).substring(2, 7);
-      const slug = `${baseSlug}-${uniqueSuffix}`;
+      const slug = createNewsSlug(form.title);
 
       await createDocument(COLLECTIONS.news, {
         title: form.title,

@@ -9,8 +9,9 @@ import { AlertCircle, ArrowLeft, Share2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { normalizeExternalUrl } from "@/lib/external-url";
+import { getNewsHref } from "@/lib/news-slug";
 
-interface NewsDetail { id: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
+interface NewsDetail { id: string; slug?: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
 
 export default function BeritaDetailPage() {
   const params = useParams();
@@ -129,7 +130,7 @@ export default function BeritaDetailPage() {
 
         <div className="border-t pt-6 flex justify-between items-center">
           <Link href="/berita"><Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" /> Berita Lainnya</Button></Link>
-          <Button variant="ghost" className="gap-2" onClick={() => { navigator.share?.({ title: news.title, url: window.location.href }).catch(() => {}); }}>
+          <Button variant="ghost" className="gap-2" onClick={() => { const url = new URL(getNewsHref(news), window.location.origin).toString(); navigator.share?.({ title: news.title, url }).catch(() => navigator.clipboard?.writeText(url)); }}>
             <Share2 className="w-4 h-4" /> Bagikan
           </Button>
         </div>

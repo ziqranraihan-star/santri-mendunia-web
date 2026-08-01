@@ -10,26 +10,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { getMutationErrorMessage } from "@/lib/supabase-error";
+import { isValidExternalUrl, normalizeExternalUrl } from "@/lib/external-url";
+import { ProductImageUpload } from "@/components/admin/product-image-upload";
 
 function EditProdukForm() {
   const router = useRouter(); const searchParams = useSearchParams(); const id = searchParams.get("id");
   const [loading, setLoading] = useState(false); const [initialLoading, setInitialLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", description: "", category: "makanan", price: "0", stock: "0", weight: "", pesantrenName: "", imageUrl: "" });
+  const [submitError, setSubmitError] = useState("");
+  const [form, setForm] = useState({ name: "", description: "", category: "makanan", price: "0", stock: "0", weight: "", pesantrenName: "", imageUrl: "", purchaseUrl: "" });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
   useEffect(() => {
     if (!id) { router.push("/admin/produk"); return; }
     getDocument(COLLECTIONS.products, id).then((data: any) => {
-      if (data) setForm({ name: data.name || "", description: data.description || "", category: data.category || "makanan", price: data.price?.toString() || "0", stock: data.stock?.toString() || "0", weight: data.weight?.toString() || "", pesantrenName: data.pesantrenName || "", imageUrl: data.imageUrl || "" });
+      if (data) setForm({ name: data.name || "", description: data.description || "", category: data.category || "makanan", price: data.price?.toString() || "0", stock: data.stock?.toString() || "0", weight: data.weight?.toString() || "", pesantrenName: data.pesantrenName || "", imageUrl: data.imageUrl || "", purchaseUrl: data.purchaseUrl || "" });
       setInitialLoading(false);
     });
   }, [id, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true);
+    e.preventDefault();
+    setSubmitError("");
+    if (!isValidExternalUrl(form.purchaseUrl)) {
+      setSubmitError("URL pembelian/WhatsApp tidak valid. Gunakan tautan seperti https://wa.me/628123456789.");
+      return;
+    }
+    setLoading(true);
     try {
-      if (id) await updateDocument(COLLECTIONS.products, id, { name: form.name, description: form.description, category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName, imageUrl: form.imageUrl });
+      if (id) await updateDocument(COLLECTIONS.products, id, { name: form.name.trim(), description: form.description.trim(), category: form.category, price: parseFloat(form.price) || 0, stock: parseInt(form.stock) || 0, weight: form.weight ? parseFloat(form.weight) : null, pesantrenName: form.pesantrenName.trim(), imageUrl: form.imageUrl || null, purchaseUrl: normalizeExternalUrl(form.purchaseUrl) || null });
       router.push("/admin/produk");
-    } catch { alert("Gagal"); } finally { setLoading(false); }
+    } catch (error) { setSubmitError(getMutationErrorMessage(error, "produk")); } finally { setLoading(false); }
   };
   if (initialLoading) return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
 
@@ -47,8 +57,10 @@ function EditProdukForm() {
             <div className="space-y-2"><Label>Stok</Label><Input type="number" value={form.stock} onChange={(e) => set("stock", e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Berat (gram)</Label><Input type="number" value={form.weight} onChange={(e) => set("weight", e.target.value)} /></div>
-          <div className="space-y-2"><Label>URL Gambar Produk</Label><Input value={form.imageUrl} onChange={(e) => set("imageUrl", e.target.value)} /></div>
+          <ProductImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} onError={setSubmitError} />
+          <div className="space-y-2"><Label>URL Pembelian / WhatsApp</Label><Input type="url" placeholder="https://..." value={form.purchaseUrl} onChange={(e) => set("purchaseUrl", e.target.value)} /></div>
         </CardContent></Card>
+        {submitError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</div>}
         <div className="flex justify-end gap-3"><Link href="/admin/produk"><Button variant="outline">Batal</Button></Link><Button type="submit" className="bg-teal hover:bg-teal-dark gap-2" disabled={loading}><Save className="w-4 h-4" />{loading ? "Menyimpan..." : "Simpan"}</Button></div>
       </form>
     </div>

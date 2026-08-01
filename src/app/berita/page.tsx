@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { getNewsHref } from "@/lib/news-slug";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import Navbar from "@/components/portal/navbar";
 import Footer from "@/components/portal/footer";
@@ -115,7 +116,7 @@ export default function BeritaPage() {
               const publishDate = item.publishedAt ? new Date(item.publishedAt) : null;
 
               return (
-                <Link key={item.id} href={`/berita/${item.slug || item.id}`} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
+                <Link key={item.id} href={getNewsHref(item)} className="group rounded-xl overflow-hidden border hover:shadow-lg transition-shadow bg-white relative pb-16">
                   <div className="h-44 bg-muted relative">
                     {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
                     <Badge className="absolute top-3 left-3 bg-teal text-white text-xs capitalize">{item.category}</Badge>

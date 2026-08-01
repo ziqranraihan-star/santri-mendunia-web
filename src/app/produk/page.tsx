@@ -5,6 +5,7 @@ import Footer from "@/components/portal/footer";
 import { getDocuments, COLLECTIONS, orderBy } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 interface ProductItem { id: string; name: string; description: string; price: number; category: string; imageUrl: string; purchaseUrl: string; isActive: boolean; }
@@ -32,7 +33,7 @@ export default function ProductPublicPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-teal-deep flex items-center gap-3">
-            <ShoppingBag className="w-8 h-8 text-[#F97316]" /> Santri Go Ekspor
+            <Image src="/logo-goexpro.jpeg" alt="Logo Santri Go Ekspor" width={48} height={48} className="w-12 h-12 rounded-full object-contain" /> Santri Go Ekspor
           </h1>
           <p className="text-muted-foreground mt-1">Dukung kemandirian pesantren dengan membeli produk unggulan karya santri</p>
         </div>
