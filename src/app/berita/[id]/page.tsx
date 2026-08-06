@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 import { normalizeExternalUrl } from "@/lib/external-url";
 import { getNewsHref } from "@/lib/news-slug";
 
-interface NewsDetail { id: string; slug?: string; title: string; content: string; summary: string; category: string; imageUrl: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
+interface NewsDetail { id: string; slug?: string; title: string; content: string; summary: string; category: string; imageUrl: string; imageCaption?: string; imageCredit?: string; authorName: string; publishedAt: string; viewCount: number; tags: string[]; authors?: string[]; editors?: string[]; relatedLinks?: {title: string, url: string}[]; }
 
 export default function BeritaDetailPage() {
   const params = useParams();
@@ -90,9 +90,14 @@ export default function BeritaDetailPage() {
         </div>
 
         {news.imageUrl && (
-          <div className="rounded-xl overflow-hidden mb-8">
+          <figure className="mb-8 overflow-hidden rounded-xl">
             <img src={news.imageUrl} alt={news.title} className="w-full h-auto max-h-96 object-cover" />
-          </div>
+            {(news.imageCaption || news.imageCredit) && (
+              <figcaption className="border-x border-b bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                {news.imageCaption}{news.imageCaption && news.imageCredit ? " — " : ""}{news.imageCredit && <span className="font-medium">Foto: {news.imageCredit}</span>}
+              </figcaption>
+            )}
+          </figure>
         )}
 
         {news.summary && (

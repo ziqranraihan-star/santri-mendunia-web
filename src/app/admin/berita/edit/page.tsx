@@ -34,6 +34,8 @@ function EditBeritaContent() {
     summary: "",
     category: "terkini",
     imageUrl: "",
+    imageCaption: "",
+    imageCredit: "",
     tags: "",
     isFeatured: false,
     isTrending: false,
@@ -68,6 +70,8 @@ function EditBeritaContent() {
           summary: data.summary || "",
           category: data.category || "terkini",
           imageUrl: data.imageUrl || "",
+          imageCaption: data.imageCaption || "",
+          imageCredit: data.imageCredit || "",
           tags: Array.isArray(data.tags) ? data.tags.join(", ") : (data.tags || ""),
           isFeatured: data.isFeatured || false,
           isTrending: data.isTrending || data.is_trending || false,
@@ -129,6 +133,8 @@ function EditBeritaContent() {
         summary: form.summary,
         category: form.category,
         imageUrl: form.imageUrl,
+        imageCaption: form.imageCaption,
+        imageCredit: form.imageCredit,
         isFeatured: form.isFeatured,
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
         authors: form.authors ? form.authors.split(",").map(a => a.trim()).filter(Boolean) : [userData?.name || "Admin"],
@@ -272,6 +278,16 @@ function EditBeritaContent() {
                   )}
                 </div>
               )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="imageCaption">Keterangan Foto</Label>
+                  <Textarea id="imageCaption" rows={2} placeholder="Jelaskan siapa, kegiatan, dan lokasi pada foto..." value={form.imageCaption} onChange={(e) => setForm({ ...form, imageCaption: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="imageCredit">Kredit / Sumber Foto</Label>
+                  <Input id="imageCredit" placeholder="Dok. Santri Mendunia / Nama fotografer" value={form.imageCredit} onChange={(e) => setForm({ ...form, imageCredit: e.target.value })} />
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">

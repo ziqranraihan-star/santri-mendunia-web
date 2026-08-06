@@ -32,6 +32,8 @@ export default function BuatBeritaPage() {
     summary: "",
     category: "terkini",
     imageUrl: "",
+    imageCaption: "",
+    imageCredit: "",
     tags: "",
     isFeatured: false,
     isTrending: false,
@@ -101,6 +103,8 @@ export default function BuatBeritaPage() {
         summary: form.summary,
         category: form.category,
         image_url: form.imageUrl,
+        image_caption: form.imageCaption,
+        image_credit: form.imageCredit,
         author_name: userData?.name || "Admin",
         is_featured: form.isFeatured,
         view_count: 0,
@@ -245,6 +249,16 @@ export default function BuatBeritaPage() {
                   )}
                 </div>
               )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="imageCaption">Keterangan Foto</Label>
+                  <Textarea id="imageCaption" rows={2} placeholder="Jelaskan siapa, kegiatan, dan lokasi pada foto..." value={form.imageCaption} onChange={(e) => setForm({ ...form, imageCaption: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="imageCredit">Kredit / Sumber Foto</Label>
+                  <Input id="imageCredit" placeholder="Dok. Santri Mendunia / Nama fotografer" value={form.imageCredit} onChange={(e) => setForm({ ...form, imageCredit: e.target.value })} />
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">
