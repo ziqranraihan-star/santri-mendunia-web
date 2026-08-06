@@ -31,10 +31,10 @@ export default function DownloadAppPage() {
                   Akses kursus, temukan beasiswa, baca berita terkini, dan kembangkan diri Anda bersama ribuan santri lainnya di seluruh dunia.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-                  <a href="/santri-mendunia-app.apk" download>
+                  <a href="/santri-mendunia-app.apk?v=1.0.1" download>
                     <Button size="lg" className="bg-white text-teal-deep hover:bg-gray-100 font-bold h-14 px-8 rounded-full shadow-xl w-full sm:w-auto">
                       <Download className="w-5 h-5 mr-2" />
-                      Download APK (57 MB)
+                      Download APK (58 MB)
                     </Button>
                   </a>
                 </div>
